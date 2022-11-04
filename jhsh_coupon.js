@@ -1,7 +1,7 @@
 /*
 [task_local]
 # 建行生活抢券
-5 59 6,7,9 0 * * * jhsh_coupon.js, tag=建行生活抢券, enabled=true
+5 59 6,7,9 * * * jhsh_coupon.js, tag=建行生活抢券, enabled=true
 只能圈×抓包，搜yunbusiness.ccb.com，请求体中的USER_ID，设置JHSH_COUPON_CKS 手机号&USER_ID 多账号@分割 
 */
 const $ = new Env('建行生活抢券');
