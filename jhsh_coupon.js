@@ -195,11 +195,11 @@ function getCoupon() {
                     }
                 } else {
                     $.isSuccess = true
-                    if (data.LIST) {
+                    if (data.indexOf('LIST') > -1) {
                         console.log(`抢券成功！恭喜获得 ${$.couponName}`)
                         $.errMsg = `抢券成功！恭喜获得 ${$.couponName}`
                     }
-                    if (data.coupMap) {
+                    if (data.indexOf('coupMap') > -1) {
                         console.log(`已经抢过优惠券 ${$.couponName}`)
                         $.errMsg = `已经抢过优惠券 ${$.couponName}`
                     }
