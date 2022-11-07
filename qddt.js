@@ -9,19 +9,17 @@ const notify = $.isNode() ? require('./sendNotifySp') : '';
 
 if (process.env.QDDT_CKS) {
     if (process.env.QDDT_CKS.indexOf('@') > -1) {
-        cookies = process.env.QDDT_CKS.split('@');
+        cookieArr = process.env.QDDT_CKS.split('@');
     } else if (process.env.QDDT_CKS.indexOf('\n') > -1) {
-        cookies = process.env.QDDT_CKS.split('\n');
+        cookieArr = process.env.QDDT_CKS.split('\n');
     } else {
-        cookies = [process.env.QDDT_CKS];
+        cookieArr = [process.env.QDDT_CKS];
     }
-}
-
-if (cookies == '') {
+}else {
     console.log('未填写青岛地铁Cookie!')
     return
 }
-cookieArr = cookies.split('@')
+
 console.log(`\n==========共发现${cookieArr.length}个账号==========\n`)
 $.index = 0
 $.message = ''
