@@ -1,167 +1,94 @@
 /*
 [task_local]
-# 建行生活抢券
-5 59 6,7,9 * * * jhsh_coupon.js, tag=建行生活抢券, enabled=true
-只能圈×抓包，搜yunbusiness.ccb.com，请求体中的USER_ID，设置JHSH_COUPON_CKS 手机号&USER_ID 多账号@分割 
+# 青岛地铁积分
+15 9,20 * * * qddt.js, tag=青岛地铁积分, enabled=true
+搜api.qd-metro.com，请求体中的token和deviceCoding，设置QDDT_CKS token;deviceCoding 多账号@分割 
 */
-const $ = new Env('建行生活抢券');
+const $ = new Env('青岛地铁积分');
 const notify = $.isNode() ? require('./sendNotifySp') : '';
-const moment = require('moment')
-now_ts = moment().valueOf()
-today = moment(now_ts).format('YYYY-MM-DD')
-today_xingqi = moment(now_ts).format('E')
-sevenOclock_ts = moment(`${today} 07:00:00`).valueOf()
-eightOclock_ts = moment(`${today} 08:00:00`).valueOf()
-tenOclock_ts = moment(`${today} 10:00:00`).valueOf()
-tenHalfOclock_ts = moment(`${today} 10:30:00`).valueOf()
-elevenOclock_ts = moment(`${today} 11:00:00`).valueOf()
-// test_ts = now_ts + 3000
-couponIds = ''
-couponMapList = [
-    {
-        "id": "239987",
-        "name": "周一7点 满2-1券",
-        "time": "7_1"
-    },
-    {
-        "id": "239961",
-        "name": "周二7点 满3-2券",
-        "time": "7_2"
-    },
-    {
-        "id": "239968",
-        "name": "周三7点 满4-3券",
-        "time": "7_3"
-    },
-    {
-        "id": "239973",
-        "name": "周四7点 满5-4券",
-        "time": "7_4"
-    },
-    {
-        "id": "239979",
-        "name": "周五7点 满6-5券",
-        "time": "7_5"
-    },
-    {
-        "id": "239980",
-        "name": "周六7点 满7-6券",
-        "time": "7_6"
-    },
-    {
-        "id": "239984",
-        "name": "周日7点 满8-7券",
-        "time": "7_7"
-    },
-    {
-        "id": "243175",
-        "name": "【数币支付5折起】商超/轻餐满30元减15元券（数字人民币专属）",
-        "time": "8"
-    },
-    {
-        "id": "243159",
-        "name": "【数币支付5折起】正餐满100元减50元券（数字人民币专属）",
-        "time": "8"
-    },
-    {
-        "id": "234460",
-        "name": "【每日好券】青岛轻食满12元减6元券",
-        "time": "10"
-    },
-    {
-        "id": "241434",
-        "name": "每日好券外卖满20元减6元券（龙卡信用卡专享）",
-        "time": "10"
-    },
-]
-diff = 0
-if (sevenOclock_ts - now_ts <= 60 * 1000) {
-    diff = sevenOclock_ts - now_ts
-    couponIds = process.env.SEVEN_OCLOCK_COUPON_IDS ? SEVEN_OCLOCK_COUPON_IDS : "239984&239980&239979&239973&239968&239961&239987"
+
+if (process.env.QDDT_CKS) {
+    if (process.env.QDDT_CKS.indexOf('@') > -1) {
+        cookies = process.env.QDDT_CKS.split('@');
+    } else if (process.env.QDDT_CKS.indexOf('\n') > -1) {
+        cookies = process.env.QDDT_CKS.split('\n');
+    } else {
+        cookies = [process.env.QDDT_CKS];
+    }
 }
-if (eightOclock_ts - now_ts <= 60 * 1000) {
-    diff = eightOclock_ts - now_ts
-    couponIds = process.env.EIGHT_OCLOCK_COUPON_IDS ? EIGHT_OCLOCK_COUPON_IDS : "243175&243159"
-}
-if (tenOclock_ts - now_ts <= 60 * 1000) {
-    couponIds = process.env.TEN_OCLOCK_COUPON_IDS ? TEN_OCLOCK_COUPON_IDS : "234460&241434"
-}
-if (tenHalfOclock_ts - now_ts <= 60 * 1000) {
-    couponIds = process.env.TEN_HELF_OCLOCK_COUPON_IDS ? TEN_HELF_OCLOCK_COUPON_IDS : ""
-}
-if (elevenOclock_ts - now_ts <= 60 * 1000) {
-    couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : ""
-}
-// if (test_ts - now_ts <= 60 * 1000) {
-//     couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "241434"
-// }
-// couponIds = '239984&239980&239979&239973&239968&239961&239987&234460'
-if (couponIds == '') {
-    console.log('当前时间段没有可抢券！')
-    return
-}
-couponIdArr = couponIds.split('&')
-$.url = 'https://yunbusiness.ccb.com/clp_coupon/txCtrl?txcode=A3341C040'
-cookies = process.env.JHSH_COUPON_CKS ? process.env.JHSH_COUPON_CKS : ''
+
 if (cookies == '') {
-    console.log('未填写建行生活抢券Cookie!')
+    console.log('未填写青岛地铁Cookie!')
     return
 }
 cookieArr = cookies.split('@')
 console.log(`\n==========共发现${cookieArr.length}个账号==========\n`)
 $.index = 0
-$.xingqi = 0
-$.couponTime = 0
 $.message = ''
 !(async () => {
-    await $.wait(diff)
-    a: for (couponId of couponIdArr) {
-        $.couponId = couponId
-        $.index = 0
-        for (couponInfo of couponMapList) {
-            if (couponInfo.id == $.couponId) {
-                $.couponName = couponInfo.name
-                $.couponTime = couponInfo.time
-                if ($.couponTime.indexOf("_") > -1) {
-                    $.xingqi = $.couponTime.split("_")[1]
-                    $.couponTime = $.couponTime.split("_")[0]
-                }
-                if ($.xingqi != 0 && $.xingqi != today_xingqi) {
-                    console.log(`\n${$.couponName} 非抢券时间`)
-                    continue a
-                }
-            }
+    for (cookie of cookieArr) {
+        $.index++
+        console.log(`\n==========开始账号【${$.index}】任务==========\n`)
+        $.totalScore = -1
+        token = cookie.split(';')[0]
+        deviceCoding = cookie.split(';')[1]
+        baseBody = {
+            "token": token,
+            "deviceCoding": deviceCoding
         }
-        console.log(`\n开始抢券 ${$.couponName}`)
-        for (cookie of cookieArr) {
-            $.hotFlag = true
-            $.needWait = false
-            $.isSuccess = false
-            $.errMsg = ''
-            $.index++
-            $.phone = cookie.split(';')[0]
-            $.userId = cookie.split(';')[1]
-            console.log(`当前进行的账号为【${$.phone}】`)
+        await accInfo('https://api.qd-metro.com/ngscore/user/accInfo', baseBody)
+        lastScore = $.totalScore
+        $.taskList = []
+        await getTaskList('https://api.qd-metro.com/ngscore/task/taskShowList', baseBody)
+        await $.wait(1000)
+        if ($.taskList.length > 0) {
+            console.log(`成功获取任务列表~`)
+            for (let taskInfo of $.taskList) {
+                taskId = taskInfo.id
+                taskName = taskInfo.name
+                taskStatus = taskInfo.status
+                if (taskStatus == '4') {
+                    console.log(`任务【${taskName}】已经完成过了~`)
+                }
+                bodyGetPrize = {
+                    "token": token,
+                    "deviceCoding": deviceCoding,
+                    "taskConfId": taskId
+                }
+                if (taskStatus == '3') {
+                    console.log(`任务【${taskName}】已经完成，去领取奖励`)
+                    await finishTask('https://api.qd-metro.com/ngscore/task/finishTask', bodyGetPrize)
+                    await $.wait(1000)
+                }
 
-            $.UA = `jdapp;iPhone;10.2.2;13.1.2;${uuid()};M/5.0;network/wifi;ADID/;model/iPhone8,1;addressid/2308460611;appBuild/167863;jdSupportDarkMode/0;Mozilla/5.0 (iPhone; CPU iPhone OS 13_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;`
-            for (count = 0; count < 10; count++) {
-                if ($.hotFlag == true) {
-                    console.log(`开始尝试第${count + 1}次抢券~`)
-                    await getCoupon()
-                    await $.wait(300)
-                    if ($.needWait == true) {
-                        await $.wait(500)
+                if (taskStatus == '2') {
+                    console.log(`去完成【${taskName}】`)
+                    await getTaskBrowseConf('https://api.qd-metro.com/ngscore/task/getTaskBrowseConf', bodyGetPrize)
+                    await $.wait(2000)
+                    documentId = $.documentId
+                    bodyFinishTask = {
+                        "token": token,
+                        "deviceCoding": deviceCoding,
+                        "taskConfId": taskId,
+                        "documentId": documentId
                     }
-                } else {
-                    break
+                    await browseDocument('https://api.qd-metro.com/ngscore/task/browseDocument', bodyFinishTask)
+                    await $.wait(2000)
+                    console.log(`任务【${taskName}】已经完成，去领取奖励`)
+                    await finishTask('https://api.qd-metro.com/ngscore/task/finishTask', bodyGetPrize)
+                    await $.wait(1000)
                 }
+
             }
-            console.log(`抢券结果：${$.errMsg}`)
-            $.message += `账号[${$.phone}] ${$.couponName} ${$.errMsg}\n`
         }
+        await accInfo('https://api.qd-metro.com/ngscore/user/accInfo', baseBody)
+        currentScore = $.totalScore
+        $.message += `账号[${$.index}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分\n`
+        console.log(`账号[${$.index}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分`)
     }
+
     if ($.message != '') {
-        await notify.sendNotify("建行生活抢券通知", `${$.message}`)
+        await notify.sendNotify("青岛地铁积分到账通知", `${$.message}`)
     }
 
 })()
@@ -172,36 +99,16 @@ $.message = ''
         $.done();
     })
 
-function getCoupon() {
-    let myRequest = getPostRequest();
-    // console.log(type + '-->'+ JSON.stringify(myRequest))
+function accInfo(url, body) {
+    let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
-                $.hotFlag = false
-                $.needWait = false
-                $.isSuccess = false
                 dataObj = JSON.parse(data)
                 if (err) {
-                    $.errMsg = `抢券失败：${dataObj.errMsg}`
-                    console.log($.errMsg)
-                    if ($.errMsg.indexOf('拥挤') > -1) {
-                        $.hotFlag = true
-                    }
-                    if ($.errMsg.indexOf('流控检查') > -1) {
-                        $.needWait = true
-                        $.hotFlag = true
-                    }
+                    console.log(dataObj.msg)
                 } else {
-                    $.isSuccess = true
-                    if (data.indexOf('LIST') > -1) {
-                        console.log(`抢券成功！恭喜获得 ${$.couponName}`)
-                        $.errMsg = `抢券成功！恭喜获得 ${$.couponName}`
-                    }
-                    if (data.indexOf('coupMap') > -1) {
-                        console.log(`已经抢过优惠券 ${$.couponName}`)
-                        $.errMsg = `已经抢过优惠券 ${$.couponName}`
-                    }
+                    $.totalScore = dataObj.data.totalScore
                 }
             } catch (e) {
                 // console.log(data);
@@ -213,53 +120,97 @@ function getCoupon() {
     })
 }
 
+function getTaskList(url, body) {
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (err) {
+                    console.log(dataObj.msg)
+                } else {
+                    $.taskList = dataObj.data
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
 
-function getPostRequest(method = "POST") {
+function browseDocument(url, body) {
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                console.log(dataObj.msg)
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getTaskBrowseConf(url, body) {
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (err) {
+                    console.log(dataObj.msg)
+                } else {
+                    $.documentId = dataObj.data.id
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function finishTask(url, body) {
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                console.log(dataObj.msg)
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getPostRequest(url, body, method = "POST") {
     let headers = {
-        "Accept": "application/json,text/javascript,*/*",
-        // "Accept-Encoding": "gzip, deflate, br",
+        "Accept": "application/json, text/plain, */*",
+        "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
         "User-Agent": $.UA,
         "Content-Type": "application/json",
-        // "X-Requested-With": "XMLHttpRequest",
-        "Host": "yunbusiness.ccb.com"
-
+        "Host": "api.qd-metro.com",
+        "Referer": "https://appcdn.qd-metro.com/",
+        "Origin": "https://appcdn.qd-metro.com"
     }
-    body = getRequestBody()
     // console.log(JSON.stringify(body))
-    return { url: $.url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
+    return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }
 
-function getRequestBody() {
-    // return `{"req_channel_type": "1","PlatForm_Code": "MCP", "coupon_ID": ${$.couponId},"Mrch_ID": "","Mblph_No": ${$.phone},"Channel_User_ID": ${$.userId},"CLD_SOURCE_CHNL": "01","DtSrc": "MCP","MctGetCoupon_Type": "20","MS_FLAG": "0","CLD_REQ_CHANNEL": "01","MCT_CTMS": {},"COUPON_ID": ${$.couponId},"MEB_ID": ${$.userId},"USR_TEL": ${$.phone},"COUP_CHNL": "01","MSPS_ENTITY": {"PlatForm_Code": "MCP","coupon_ID": ${$.couponId},"Channel_User_ID": ${$.userId},"Mblph_No": ${$.phone},"DtSrc": "MCP"},"chnlType": "1","regionCode": "370200"}`
-    return {
-        "req_channel_type": "1",
-        "PlatForm_Code": "MCP",
-        "coupon_ID": $.couponId,
-        "Mrch_ID": "",
-        "Mblph_No": $.phone,
-        "Channel_User_ID": $.userId,
-        "CLD_SOURCE_CHNL": "01",
-        "DtSrc": "MCP",
-        "MctGetCoupon_Type": "20",
-        "MS_FLAG": "0",
-        "CLD_REQ_CHANNEL": "01",
-        "MCT_CTMS": {},
-        "COUPON_ID": $.couponId,
-        "MEB_ID": $.userId,
-        "USR_TEL": $.phone,
-        "COUP_CHNL": "01",
-        "MSPS_ENTITY": {
-            "PlatForm_Code": "MCP",
-            "coupon_ID": $.couponId,
-            "Channel_User_ID": $.userId,
-            "Mblph_No": $.phone,
-            "DtSrc": "MCP"
-        },
-        "chnlType": "1",
-        "regionCode": "370200"
-    }
-}
+
 function uuid(x = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") {
     return x.replace(/[xy]/g, function (x) {
         const r = 16 * Math.random() | 0, n = "x" === x ? r : 3 & r | 8;
