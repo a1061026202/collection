@@ -31,8 +31,8 @@ $.message = ''
     $.message = await Promise.all(promiseList)
     console.log(`\n====================\n`)
     console.log($.message)
-    await notify.sendNotify("青岛地铁积分到账通知", `${$.message.join('')}`)
-    
+    await notify.sendNotify("青岛地铁周周券通知", `${$.message.join('')}`)
+
 
 })()
     .catch((e) => {
@@ -51,55 +51,11 @@ function main(cookie) {
         console.log(moment().format('YYYY-MM-DD hh:mm:ss.SSS'))
         var baseBody = {
             "token": token,
-            "deviceCoding": deviceCoding
+            "deviceCoding": deviceCoding,
+            "activityNo": "WC11"
         }
-        var lastScore = await accInfo('https://api.qd-metro.com/ngscore/user/accInfo', baseBody)
-        var taskList = await getTaskList('https://api.qd-metro.com/ngscore/task/taskShowList', baseBody)
-        await $.wait(1000)
-        if (taskList.length > 0) {
-            console.log(`【${token}】成功获取任务列表~`)
-            for (let taskInfo of taskList) {
-                let taskId = taskInfo.id
-                let taskName = taskInfo.name
-                let taskStatus = taskInfo.status
-                if (taskStatus == '4') {
-                    console.log(`任务【${taskName}】已经完成过了~`)
-                }
-                console.log(token)
-                let bodyGetPrize = {
-                    "token": token,
-                    "deviceCoding": deviceCoding,
-                    "taskConfId": taskId
-                }
-                if (taskStatus == '3') {
-                    console.log(`任务【${taskName}】已经完成，去领取奖励`)
-                    await finishTask('https://api.qd-metro.com/ngscore/task/finishTask', bodyGetPrize)
-                    await $.wait(1000)
-                }
-
-                if (taskStatus == '2') {
-                    console.log(`【${token}】去完成【${taskName}】`)
-                    var documentId = await getTaskBrowseConf('https://api.qd-metro.com/ngscore/task/getTaskBrowseConf', bodyGetPrize)
-                    await $.wait(2000)
-                    let bodyFinishTask = {
-                        "token": token,
-                        "deviceCoding": deviceCoding,
-                        "taskConfId": taskId,
-                        "documentId": documentId
-                    }
-                    await browseDocument('https://api.qd-metro.com/ngscore/task/browseDocument', bodyFinishTask)
-                    await $.wait(2000)
-                    console.log(`【${token}】任务【${taskName}】已经完成，去领取奖励`)
-                    await finishTask('https://api.qd-metro.com/ngscore/task/finishTask', bodyGetPrize, token)
-                    await $.wait(1000)
-                }
-
-            }
-        }
-        var currentScore = await accInfo('https://api.qd-metro.com/ngscore/user/accInfo', baseBody)
-        var message = `账号[${token}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分\n`
-        console.log(`账号[${token}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分`)
-        console.log(moment().format('YYYY-MM-DD hh:mm:ss.SSS'))
+        resp = await getCard('https://api.qd-metro.com/ngactivity/weeklyCard/getCard', baseBody)
+        message = resp.respmsg
         resolve(message)
     })
 }
@@ -148,51 +104,11 @@ function getTaskList(url, body) {
     })
 }
 
-function browseDocument(url, body) {
+function getCard(url, body) {
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
-                console.log(dataObj.msg)
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function getTaskBrowseConf(url, body) {
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                documentId = -1
-                dataObj = JSON.parse(data)
-                if (err) {
-                    console.log(dataObj.msg)
-                } else {
-                    documentId = dataObj.data.id
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve(documentId);
-            }
-        })
-    })
-}
-
-function finishTask(url, body, token) {
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                console.log(resp)
-                dataObj = JSON.parse(data)
                 console.log(dataObj.msg)
             } catch (e) {
                 // console.log(data);
