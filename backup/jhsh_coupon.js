@@ -73,30 +73,49 @@ couponMapList = [
         "name": "每日好券外卖满20元减6元券（龙卡信用卡专享）",
         "time": "10"
     },
+    {
+        "id": "246994",
+        "name": "崂山矿泉水，周二11点",
+        "time": "11_2"
+    },
+    {
+        "id": "143780",
+        "name": "周四5折胖哥俩满100减50元券-青岛（数币专享）",
+        "time": "10:30_4"
+    },
+    {
+        "id": "164194",
+        "name": "周四5折那些年满100减50元券-青岛（数币专享）",
+        "time": "10:30_4"
+    }
 ]
-diff = 0
-if (sevenOclock_ts - now_ts <= 60 * 1000) {
+diff = -1
+if (sevenOclock_ts - now_ts <= 60 * 1000 && sevenOclock_ts - now_ts > 0) {
     diff = sevenOclock_ts - now_ts
     couponIds = process.env.SEVEN_OCLOCK_COUPON_IDS ? SEVEN_OCLOCK_COUPON_IDS : "239984&239980&239979&239973&239968&239961&239987"
 }
-if (eightOclock_ts - now_ts <= 60 * 1000) {
+if (eightOclock_ts - now_ts <= 60 * 1000 && eightOclock_ts - now_ts > 0) {
     diff = eightOclock_ts - now_ts
     couponIds = process.env.EIGHT_OCLOCK_COUPON_IDS ? EIGHT_OCLOCK_COUPON_IDS : "243175&243159"
 }
-if (tenOclock_ts - now_ts <= 60 * 1000) {
-    couponIds = process.env.TEN_OCLOCK_COUPON_IDS ? TEN_OCLOCK_COUPON_IDS : "234460&241434"
+if (tenOclock_ts - now_ts <= 60 * 1000 && tenOclock_ts - now_ts > 0) {
+    diff = tenOclock_ts - now_ts
+    couponIds = process.env.TEN_OCLOCK_COUPON_IDS ? TEN_OCLOCK_COUPON_IDS : "246994&234460&241434"
 }
-if (tenHalfOclock_ts - now_ts <= 60 * 1000) {
-    couponIds = process.env.TEN_HELF_OCLOCK_COUPON_IDS ? TEN_HELF_OCLOCK_COUPON_IDS : ""
+if (tenHalfOclock_ts - now_ts <= 60 * 1000 && tenHalfOclock_ts - now_ts > 0) {
+    diff = tenHalfOclock_ts - now_ts
+    couponIds = process.env.TEN_HELF_OCLOCK_COUPON_IDS ? TEN_HELF_OCLOCK_COUPON_IDS : "164194&143780"
 }
-if (elevenOclock_ts - now_ts <= 60 * 1000) {
-    couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : ""
+if (elevenOclock_ts - now_ts <= 60 * 1000 && elevenOclock_ts - now_ts > 0) {
+    diff = elevenOclock_ts - now_ts
+    couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "246994"
 }
+
 // if (test_ts - now_ts <= 60 * 1000) {
 //     couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "241434"
 // }
 // couponIds = '239984&239980&239979&239973&239968&239961&239987&234460'
-if (couponIds == '') {
+if (couponIds == '' || diff == -1) {
     console.log('当前时间段没有可抢券！')
     return
 }
