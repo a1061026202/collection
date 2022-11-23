@@ -191,7 +191,7 @@ $.promiseList = []
                 $.couponName = couponInfo.name
                 $.couponTime = couponInfo.time
                 if ($.couponTime.indexOf("_") > -1) {
-                    $.xingqi = $.couponTime.split("_")[1]
+                    $.xingqi = $.couponTime.split("_")[1] || 0
                     $.couponTime = $.couponTime.split("_")[0]
                 }
                 if ($.xingqi != 0 && $.xingqi != today_xingqi) {
@@ -233,6 +233,7 @@ function main(cookie, couponId, couponName) {
         dict.userId = userId
         dict.ua = ua
         dict.couponId = couponId
+        dict.couponName = couponName
         for (let count = 0; count < 10; count++) {
             if (dict.hotFlag == true) {
                 console.log(`${time()} 账号【${phone}】开始尝试第${count + 1}次抢券~`)
@@ -274,11 +275,11 @@ function getCoupon(dict) {
                     dict.isSuccess = true
                     if (data.indexOf('LIST') > -1) {
                         console.log(`抢券成功！恭喜获得 ${dict.couponName}`)
-                        dict.errMsg = `抢券成功！恭喜获得 ${dict.couponName}`
+                        dict.errMsg = `抢券成功！`
                     }
                     if (data.indexOf('coupMap') > -1) {
                         console.log(`已经抢过优惠券 ${dict.couponName}`)
-                        dict.errMsg = `已经抢过优惠券 ${dict.couponName}`
+                        dict.errMsg = `已经抢过优惠券 `
                     }
                 }
             } catch (e) {
