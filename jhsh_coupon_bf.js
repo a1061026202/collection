@@ -25,37 +25,58 @@ couponMapList = [
     {
         "id": "239987",
         "name": "周一7点 满2-1券",
-        "time": "7_1"
+        "time": "7_1",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "239961",
         "name": "周二7点 满3-2券",
-        "time": "7_2"
+        "time": "7_2",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "239968",
         "name": "周三7点 满4-3券",
-        "time": "7_3"
+        "time": "7_3",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "239973",
         "name": "周四7点 满5-4券",
-        "time": "7_4"
+        "time": "7_4",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "239979",
         "name": "周五7点 满6-5券",
-        "time": "7_5"
+        "time": "7_5",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "239980",
         "name": "周六7点 满7-6券",
-        "time": "7_6"
+        "time": "7_6",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "239984",
         "name": "周日7点 满8-7券",
-        "time": "7_7"
+        "time": "7_7",
+        "getTimes": "2",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "243175",
@@ -70,17 +91,26 @@ couponMapList = [
     {
         "id": "234460",
         "name": "【每日好券】青岛轻食满12元减6元券",
-        "time": "10"
+        "time": "10",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "241434",
         "name": "每日好券外卖满20元减6元券（龙卡信用卡专享）",
-        "time": "10"
+        "time": "10",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "246994",
         "name": "崂山矿泉水，周二11点",
-        "time": "11_2"
+        "time": "11_2",
+        "getTimes": "1",
+        "period": "Forever",
+        "zoneId": "370200"
     },
     {
         "id": "252156",
@@ -95,32 +125,74 @@ couponMapList = [
     {
         "id": "143780",
         "name": "周四5折胖哥俩满100减50元券-青岛（数币专享）",
-        "time": "10:30_4"
+        "time": "10:30_4",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
-        "id": "253297",
-        "name": "周五话费50-40券",
-        "time": "8:30_5"
+        "id": "143754",
+        "name": "周四5折西村叔叔满50减25元券-青岛（数币专享）",
+        "time": "10:30_4",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
-        "id": "253297",
-        "name": "周五话费50-40券",
-        "time": "14:30_5"
+        "id": "198662",
+        "name": "周四5折笑蕾满50减25元券-青岛（数币专享）",
+        "time": "10:30_4",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
-        "id": "251869",
-        "name": "周五外卖30-20券",
-        "time": "11:30_5"
-    },
-    {
-        "id": "251869",
-        "name": "周五外卖30-20券",
-        "time": "15:30_5"
+        "id": "164187",
+        "name": "周四5折皇家美孚满50减25元券-青岛（数币专享）",
+        "time": "10:30_4",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
     },
     {
         "id": "164194",
         "name": "周四5折那些年满100减50元券-青岛（数币专享）",
-        "time": "10:30_4"
+        "time": "10:30_4",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "253297",
+        "name": "周五话费50-40券",
+        "time": "8:30_5",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "253297",
+        "name": "周五话费50-40券",
+        "time": "14:30_5",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "251869",
+        "name": "周五外卖30-20券",
+        "time": "11:30_5",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "251869",
+        "name": "周五外卖30-20券",
+        "time": "15:30_5",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
     }
 ]
 diff = -1
@@ -138,7 +210,7 @@ if (eightHalfOclock_ts - now_ts <= 60 * 1000 && eightHalfOclock_ts - now_ts > 0)
 }
 if (tenOclock_ts - now_ts <= 60 * 1000 && tenOclock_ts - now_ts > 0) {
     diff = tenOclock_ts - now_ts
-    couponIds = process.env.TEN_OCLOCK_COUPON_IDS ? TEN_OCLOCK_COUPON_IDS : "246994&234460&241434"
+    couponIds = process.env.TEN_OCLOCK_COUPON_IDS ? TEN_OCLOCK_COUPON_IDS : "254554&246314"
 }
 if (tenHalfOclock_ts - now_ts <= 60 * 1000 && tenHalfOclock_ts - now_ts > 0) {
     diff = tenHalfOclock_ts - now_ts
@@ -146,7 +218,7 @@ if (tenHalfOclock_ts - now_ts <= 60 * 1000 && tenHalfOclock_ts - now_ts > 0) {
 }
 if (elevenOclock_ts - now_ts <= 60 * 1000 && elevenOclock_ts - now_ts > 0) {
     diff = elevenOclock_ts - now_ts
-    couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "252152"
+    couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : ""
 }
 if (elevenHALFOclock_ts - now_ts <= 60 * 1000 && elevenHALFOclock_ts - now_ts > 0) {
     diff = elevenHALFOclock_ts - now_ts
@@ -164,7 +236,7 @@ if (pmThreeHalfOclock_ts - now_ts <= 60 * 1000 && pmThreeHalfOclock_ts - now_ts 
 // if (test_ts - now_ts <= 60 * 1000) {
 //     couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "241434"
 // }
-// couponIds = '239984&239980&239979&239973&239968&239961&239987&234460'
+// couponIds = '241434'
 if (couponIds == '' || diff == -1) {
     console.log('当前时间段没有可抢券！')
     return
@@ -184,16 +256,19 @@ $.message = ''
 $.promiseList = []
 !(async () => {
     await $.wait(diff)
-    a: for (couponId of couponIdArr) {
-        $.couponId = couponId
+    a: for (let couponId of couponIdArr) {
+
         for (couponInfo of couponMapList) {
-            if (couponInfo.id == $.couponId) {
+            if (couponInfo.id == couponId) {
                 $.couponName = couponInfo.name
                 $.couponTime = couponInfo.time
                 if ($.couponTime.indexOf("_") > -1) {
-                    $.xingqi = $.couponTime.split("_")[1] || 0
+                    $.xingqi = $.couponTime.split("_")[1]
                     $.couponTime = $.couponTime.split("_")[0]
+                } else {
+                    $.xingqi = 0
                 }
+                console.log($.xingqi)
                 if ($.xingqi != 0 && $.xingqi != today_xingqi) {
                     console.log(`\n${$.couponName} 非抢券时间`)
                     continue a
@@ -201,7 +276,7 @@ $.promiseList = []
             }
         }
         for (cookie of cookieArr) {
-            $.promiseList.push(main(cookie, $.couponId, $.couponName))
+            $.promiseList.push(main(cookie, couponId, $.couponName))
         }
     }
     $.message = await Promise.all($.promiseList)
@@ -234,7 +309,7 @@ function main(cookie, couponId, couponName) {
         dict.ua = ua
         dict.couponId = couponId
         dict.couponName = couponName
-        for (let count = 0; count < 10; count++) {
+        for (let count = 0; count < 20; count++) {
             if (dict.hotFlag == true) {
                 console.log(`${time()} 账号【${phone}】开始尝试第${count + 1}次抢券~`)
                 await getCoupon(dict)
@@ -274,11 +349,11 @@ function getCoupon(dict) {
                 } else {
                     dict.isSuccess = true
                     if (data.indexOf('LIST') > -1) {
-                        console.log(`抢券成功！恭喜获得 ${dict.couponName}`)
+                        console.log(`${time()}【${dict.phone}】抢券成功，获得 ${dict.couponName}`)
                         dict.errMsg = `抢券成功！`
                     }
                     if (data.indexOf('coupMap') > -1) {
-                        console.log(`已经抢过优惠券 ${dict.couponName}`)
+                        console.log(`${time()}【${dict.phone}】已经抢过 ${dict.couponName}`)
                         dict.errMsg = `已经抢过优惠券 `
                     }
                 }
