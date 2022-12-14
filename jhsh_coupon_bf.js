@@ -11,7 +11,7 @@ const moment = require('moment');
 couponIds = ''
 couponMapList = [
     {
-        "id": "239987",
+        "id": "261548",
         "name": "周一7点 满2-1券",
         "time": "7:00_1",
         "getTimes": "2",
@@ -19,7 +19,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "239961",
+        "id": "261549",
         "name": "周二7点 满3-2券",
         "time": "7:00_2",
         "getTimes": "2",
@@ -27,7 +27,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "239968",
+        "id": "261536",
         "name": "周三7点 满4-3券",
         "time": "7:00_3",
         "getTimes": "2",
@@ -35,7 +35,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "239973",
+        "id": "261526",
         "name": "周四7点 满5-4券",
         "time": "7:00_4",
         "getTimes": "2",
@@ -43,7 +43,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "239979",
+        "id": "261541",
         "name": "周五7点 满6-5券",
         "time": "7:00_5",
         "getTimes": "2",
@@ -51,7 +51,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "239980",
+        "id": "261544",
         "name": "周六7点 满7-6券",
         "time": "7:00_6",
         "getTimes": "2",
@@ -59,7 +59,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "239984",
+        "id": "261545",
         "name": "周日7点 满8-7券",
         "time": "7:00_7",
         "getTimes": "2",
@@ -67,23 +67,31 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "243175",
-        "name": "【数币支付5折起】商超/轻餐满30元减15元券（数字人民币专属）",
-        "time": "8:00"
-    },
-    {
-        "id": "243159",
-        "name": "【数币支付5折起】正餐满100元减50元券（数字人民币专属）",
-        "time": "8:00"
-    },
-    {
-        "id": "246323",
-        "name": "【每日好券】青岛轻食满12元减6元券",
-        "time": "10:00",
-        "getTimes": "4",
+        "id": "261545",
+        "name": "周日7点 满8-7券",
+        "time": "7:00_7",
+        "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
     },
+    // {
+    //     "id": "243175",
+    //     "name": "【数币支付5折起】商超/轻餐满30元减15元券（数字人民币专属）",
+    //     "time": "8:00"
+    // },
+    // {
+    //     "id": "235959",
+    //     "name": "手机充值50-5",
+    //     "time": "9:00"
+    // },
+    // {
+    //     "id": "246323",
+    //     "name": "【每日好券】青岛轻食满12元减6元券",
+    //     "time": "10:00",
+    //     "getTimes": "4",
+    //     "period": "Week",
+    //     "zoneId": "370200"
+    // },
     // {
     //     "id": "241434",
     //     "name": "每日好券外卖满20元减6元券（龙卡信用卡专享）",
@@ -159,45 +167,53 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "253324",
-        "name": "周五话费50-40券",
-        "time": "8:30_5",
+        "id": "EN13743486A81F2AD27E90ABFC68365FF3",
+        "name": "话费50-20券",
+        "time": "14:30",
         "getTimes": "1",
         "period": "Week",
         "zoneId": "370200"
     },
     {
-        "id": "253324",
-        "name": "周五话费50-40券",
-        "time": "14:30_5",
+        "id": "EN8B2825ED26A93F0EDDB8875A7F47D27A",
+        "name": "外卖20-10",
+        "time": "11:30",
         "getTimes": "1",
         "period": "Week",
         "zoneId": "370200"
     },
     {
-        "id": "251873",
-        "name": "周五外卖30-20券",
-        "time": "11:30_5",
+        "id": "YHQ2022120585892",
+        "name": "外卖30-15券",
+        "time": "17:00",
         "getTimes": "1",
         "period": "Week",
         "zoneId": "370200"
     },
     {
-        "id": "251873",
-        "name": "周五外卖30-20券",
-        "time": "15:30_5",
-        "getTimes": "1",
-        "period": "Week",
-        "zoneId": "370200"
-    },
-    {
-        "id": "265238",
-        "name": "周五外卖20-10券",
-        "time": "11:00_5",
+        "id": "YHQ2022111088563",
+        "name": "花费50-5",
+        "time": "9:00",
         "getTimes": "1",
         "period": "Week",
         "zoneId": "370200"
     }
+    // {
+    //     "id": "251789",
+    //     "name": "周五外卖30-20券",
+    //     "time": "15:30_5",
+    //     "getTimes": "1",
+    //     "period": "Week",
+    //     "zoneId": "370200"
+    // },
+    // {
+    //     "id": "265238",
+    //     "name": "周五外卖20-10券",
+    //     "time": "11:00_5",
+    //     "getTimes": "1",
+    //     "period": "Week",
+    //     "zoneId": "370200"
+    // }
 ]
 now_ts = moment().valueOf()
 today = moment(now_ts).format('YYYY-MM-DD')
@@ -205,6 +221,7 @@ today_xingqi = moment(now_ts).format('E')
 sevenOclock_ts = moment(`${today} 07:00:00`).valueOf()
 eightOclock_ts = moment(`${today} 08:00:00`).valueOf()
 eightHalfOclock_ts = moment(`${today} 08:30:00`).valueOf()
+nineOclock_ts = moment(`${today} 09:00:00`).valueOf()
 tenOclock_ts = moment(`${today} 10:00:00`).valueOf()
 tenHalfOclock_ts = moment(`${today} 10:30:00`).valueOf()
 elevenOclock_ts = moment(`${today} 11:00:00`).valueOf()
@@ -255,6 +272,20 @@ if (eightHalfOclock_ts - now_ts <= 60 * 1000 && eightHalfOclock_ts - now_ts > 0)
     }
     couponIds = couponIdList.join('&')
     diff = eightHalfOclock_ts - now_ts
+}
+if (nineOclock_ts - now_ts <= 60 * 1000 && nineOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '9:00') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
+    diff = nineOclock_ts - now_ts
 }
 if (tenOclock_ts - now_ts <= 60 * 1000 && tenOclock_ts - now_ts > 0) {
     let couponIdList = []
@@ -345,7 +376,7 @@ if (pmThreeHalfOclock_ts - now_ts <= 60 * 1000 && pmThreeHalfOclock_ts - now_ts 
 // if (test_ts - now_ts <= 60 * 1000) {
 //     couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "241434"
 // }
-// couponIds = '241434'
+// couponIds = 'YHQ2022111088563'
 if (couponIds == '' || diff == -1) {
     console.log('当前时间段没有可抢券！')
     return
@@ -418,7 +449,7 @@ function main(cookie, couponId, couponName) {
         dict.ua = ua
         dict.couponId = couponId
         dict.couponName = couponName
-        for (let count = 0; count < 20; count++) {
+        for (let count = 0; count < 100; count++) {
             if (dict.hotFlag == true) {
                 console.log(`${time()} 账号【${phone}】开始尝试第${count + 1}次抢券~`)
                 await getCoupon(dict)
@@ -441,6 +472,7 @@ function getCoupon(dict) {
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
+                dict.errMsg = "初始化错误信息"
                 dict.hotFlag = false
                 dict.needWait = false
                 dict.isSuccess = false
@@ -491,7 +523,13 @@ function getPostRequest(dict, method = "POST") {
         "Host": "yunbusiness.ccb.com"
 
     }
-    body = getRequestBody(dict)
+    if (dict.couponId.indexOf('YHQ') > -1) {
+        console.log(`当前券为YHQ开头，调用第二个方法生成body`)
+        body = getRequestBody2(dict)
+    } else {
+        console.log(`当前券为非YHQ开头，调用第一个方法生成body`)
+        body = getRequestBody(dict)
+    }
     // console.log(JSON.stringify(body))
     return { url: $.url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }
@@ -526,6 +564,45 @@ function getRequestBody(dict) {
         "regionCode": "370200"
     }
 }
+
+function getRequestBody2(dict) {
+    // return `{"req_channel_type": "1","PlatForm_Code": "MCP", "coupon_ID": ${$.couponId},"Mrch_ID": "","Mblph_No": ${$.phone},"Channel_User_ID": ${$.userId},"CLD_SOURCE_CHNL": "01","DtSrc": "MCP","MctGetCoupon_Type": "20","MS_FLAG": "0","CLD_REQ_CHANNEL": "01","MCT_CTMS": {},"COUPON_ID": ${$.couponId},"MEB_ID": ${$.userId},"USR_TEL": ${$.phone},"COUP_CHNL": "01","MSPS_ENTITY": {"PlatForm_Code": "MCP","coupon_ID": ${$.couponId},"Channel_User_ID": ${$.userId},"Mblph_No": ${$.phone},"DtSrc": "MCP"},"chnlType": "1","regionCode": "370200"}`
+    return {
+        "req_channel_type": "3",
+        "PlatForm_Code": "MCP",
+        "coupon_ID": "",
+        "Mrch_ID": "",
+        "Mblph_No": "",
+        "Channel_User_ID": "",
+        "CLD_SOURCE_CHNL": "01",
+        "DtSrc": "MCP",
+        "MctGetCoupon_Type": "1",
+        "MS_FLAG": "0",
+        "CLD_REQ_CHANNEL": "01",
+        "COUPON_ID": dict.couponId,
+        "MRCH_ID": "",
+        "KHHK_Mrch_ID": "",
+        "MEB_AREA_ID": "370200",
+        "USR_TEL": dict.phone,
+        "MEB_ID": dict.userId,
+        "COUP_CHNL": "03",
+        "KHHK_THD_ENTITY": {
+            "TrdPCt_No_Inf": dict.phone,
+            "DcCp_Avy_Txn_Tp_ECD": "010911",
+            "DcCp_Avy_ID": dict.couponId,
+            "DcCp_Bsc_Inf_SN": "003674",
+            "DcCp_Prch_Num": "1",
+            "Cst_Ctc_Tel": dict.phone,
+            "Cst_ID": dict.userId,
+            "TxCh_TpCd": "00010000"
+        },
+        "chnlType": "1",
+        "regionCode": "370200",
+        "APPEND_PARAM": ""
+    }
+}
+
+
 function uuid(x = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") {
     return x.replace(/[xy]/g, function (x) {
         const r = 16 * Math.random() | 0, n = "x" === x ? r : 3 & r | 8;
