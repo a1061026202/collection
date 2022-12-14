@@ -7,25 +7,13 @@
 const $ = new Env('建行生活抢券-并发');
 const notify = $.isNode() ? require('./sendNotifySp') : '';
 const moment = require('moment');
-now_ts = moment().valueOf()
-today = moment(now_ts).format('YYYY-MM-DD')
-today_xingqi = moment(now_ts).format('E')
-sevenOclock_ts = moment(`${today} 07:00:00`).valueOf()
-eightOclock_ts = moment(`${today} 08:00:00`).valueOf()
-eightHalfOclock_ts = moment(`${today} 08:30:00`).valueOf()
-tenOclock_ts = moment(`${today} 10:00:00`).valueOf()
-tenHalfOclock_ts = moment(`${today} 10:30:00`).valueOf()
-elevenOclock_ts = moment(`${today} 11:00:00`).valueOf()
-elevenHALFOclock_ts = moment(`${today} 11:30:00`).valueOf()
-pmTwoHalfOclock_ts = moment(`${today} 14:30:00`).valueOf()
-pmThreeHalfOclock_ts = moment(`${today} 15:30:00`).valueOf()
 // test_ts = now_ts + 3000
 couponIds = ''
 couponMapList = [
     {
         "id": "239987",
         "name": "周一7点 满2-1券",
-        "time": "7_1",
+        "time": "7:00_1",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -33,7 +21,7 @@ couponMapList = [
     {
         "id": "239961",
         "name": "周二7点 满3-2券",
-        "time": "7_2",
+        "time": "7:00_2",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -41,7 +29,7 @@ couponMapList = [
     {
         "id": "239968",
         "name": "周三7点 满4-3券",
-        "time": "7_3",
+        "time": "7:00_3",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -49,7 +37,7 @@ couponMapList = [
     {
         "id": "239973",
         "name": "周四7点 满5-4券",
-        "time": "7_4",
+        "time": "7:00_4",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -57,7 +45,7 @@ couponMapList = [
     {
         "id": "239979",
         "name": "周五7点 满6-5券",
-        "time": "7_5",
+        "time": "7:00_5",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -65,7 +53,7 @@ couponMapList = [
     {
         "id": "239980",
         "name": "周六7点 满7-6券",
-        "time": "7_6",
+        "time": "7:00_6",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -73,7 +61,7 @@ couponMapList = [
     {
         "id": "239984",
         "name": "周日7点 满8-7券",
-        "time": "7_7",
+        "time": "7:00_7",
         "getTimes": "2",
         "period": "Week",
         "zoneId": "370200"
@@ -81,47 +69,47 @@ couponMapList = [
     {
         "id": "243175",
         "name": "【数币支付5折起】商超/轻餐满30元减15元券（数字人民币专属）",
-        "time": "8"
+        "time": "8:00"
     },
     {
         "id": "243159",
         "name": "【数币支付5折起】正餐满100元减50元券（数字人民币专属）",
-        "time": "8"
+        "time": "8:00"
     },
     {
-        "id": "234460",
+        "id": "246323",
         "name": "【每日好券】青岛轻食满12元减6元券",
-        "time": "10",
+        "time": "10:00",
         "getTimes": "4",
         "period": "Week",
         "zoneId": "370200"
     },
-    {
-        "id": "241434",
-        "name": "每日好券外卖满20元减6元券（龙卡信用卡专享）",
-        "time": "10",
-        "getTimes": "4",
-        "period": "Week",
-        "zoneId": "370200"
-    },
-    {
-        "id": "246994",
-        "name": "崂山矿泉水，周二11点",
-        "time": "11_2",
-        "getTimes": "1",
-        "period": "Forever",
-        "zoneId": "370200"
-    },
-    {
-        "id": "252156",
-        "name": "崂山零售满300-100优惠券2（数字人民币专享）",
-        "time": "10_5"
-    },
-    {
-        "id": "252152",
-        "name": "崂山零售满50-20优惠券2（数字人民币专享）",
-        "time": "10_5"
-    },
+    // {
+    //     "id": "241434",
+    //     "name": "每日好券外卖满20元减6元券（龙卡信用卡专享）",
+    //     "time": "10:00",
+    //     "getTimes": "4",
+    //     "period": "Week",
+    //     "zoneId": "370200"
+    // },
+    // {
+    //     "id": "246994",
+    //     "name": "崂山矿泉水，周二11点",
+    //     "time": "11:00_2",
+    //     "getTimes": "1",
+    //     "period": "Forever",
+    //     "zoneId": "370200"
+    // },
+    // {
+    //     "id": "252156",
+    //     "name": "崂山零售满300-100优惠券2（数字人民币专享）",
+    //     "time": "10:00_5"
+    // },
+    // {
+    //     "id": "252152",
+    //     "name": "崂山零售满50-20优惠券2（数字人民币专享）",
+    //     "time": "10:00_5"
+    // },
     {
         "id": "143780",
         "name": "周四5折胖哥俩满100减50元券-青岛（数币专享）",
@@ -163,7 +151,15 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "253297",
+        "id": "225252",
+        "name": "周六5折皇家美孚",
+        "time": "11:00_6",
+        "getTimes": "4",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "253324",
         "name": "周五话费50-40券",
         "time": "8:30_5",
         "getTimes": "1",
@@ -171,7 +167,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "253297",
+        "id": "253324",
         "name": "周五话费50-40券",
         "time": "14:30_5",
         "getTimes": "1",
@@ -179,7 +175,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "251869",
+        "id": "251873",
         "name": "周五外卖30-20券",
         "time": "11:30_5",
         "getTimes": "1",
@@ -187,50 +183,163 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "251869",
+        "id": "251873",
         "name": "周五外卖30-20券",
         "time": "15:30_5",
         "getTimes": "1",
         "period": "Week",
         "zoneId": "370200"
+    },
+    {
+        "id": "265238",
+        "name": "周五外卖20-10券",
+        "time": "11:00_5",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
     }
 ]
+now_ts = moment().valueOf()
+today = moment(now_ts).format('YYYY-MM-DD')
+today_xingqi = moment(now_ts).format('E')
+sevenOclock_ts = moment(`${today} 07:00:00`).valueOf()
+eightOclock_ts = moment(`${today} 08:00:00`).valueOf()
+eightHalfOclock_ts = moment(`${today} 08:30:00`).valueOf()
+tenOclock_ts = moment(`${today} 10:00:00`).valueOf()
+tenHalfOclock_ts = moment(`${today} 10:30:00`).valueOf()
+elevenOclock_ts = moment(`${today} 11:00:00`).valueOf()
+elevenHALFOclock_ts = moment(`${today} 11:30:00`).valueOf()
+pmTwoHalfOclock_ts = moment(`${today} 14:30:00`).valueOf()
+pmThreeHalfOclock_ts = moment(`${today} 15:30:00`).valueOf()
+
 diff = -1
 if (sevenOclock_ts - now_ts <= 60 * 1000 && sevenOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '7:00') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = sevenOclock_ts - now_ts
-    couponIds = process.env.SEVEN_OCLOCK_COUPON_IDS ? SEVEN_OCLOCK_COUPON_IDS : "239984&239980&239979&239973&239968&239961&239987"
 }
 if (eightOclock_ts - now_ts <= 60 * 1000 && eightOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '8:00') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = eightOclock_ts - now_ts
-    couponIds = process.env.EIGHT_OCLOCK_COUPON_IDS ? EIGHT_OCLOCK_COUPON_IDS : "243175&243159"
+
 }
 if (eightHalfOclock_ts - now_ts <= 60 * 1000 && eightHalfOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '8:30') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = eightHalfOclock_ts - now_ts
-    couponIds = process.env.EIGHT_HALF_OCLOCK_COUPON_IDS ? EIGHT_HALF_OCLOCK_COUPON_IDS : "253297"
 }
 if (tenOclock_ts - now_ts <= 60 * 1000 && tenOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '10:00') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = tenOclock_ts - now_ts
-    couponIds = process.env.TEN_OCLOCK_COUPON_IDS ? TEN_OCLOCK_COUPON_IDS : "254554&246314"
+    console.log(couponIds)
 }
 if (tenHalfOclock_ts - now_ts <= 60 * 1000 && tenHalfOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '10:30') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = tenHalfOclock_ts - now_ts
-    couponIds = process.env.TEN_HALF_OCLOCK_COUPON_IDS ? TEN_HALF_OCLOCK_COUPON_IDS : "164194&143780"
 }
 if (elevenOclock_ts - now_ts <= 60 * 1000 && elevenOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '11:00') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = elevenOclock_ts - now_ts
-    couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : ""
 }
 if (elevenHALFOclock_ts - now_ts <= 60 * 1000 && elevenHALFOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '11:30') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = elevenHALFOclock_ts - now_ts
-    couponIds = process.env.ELEVEN_HALF_OCLOCK_COUPON_IDS ? ELEVEN_HALF_OCLOCK_COUPON_IDS : "251869"
 }
 if (pmTwoHalfOclock_ts - now_ts <= 60 * 1000 && pmTwoHalfOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '14:30') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = pmTwoHalfOclock_ts - now_ts
-    couponIds = process.env.PM_TWO_HALF_OCLOCK_COUPON_IDS ? PM_TWO_HALF_OCLOCK_COUPON_IDS : "253297"
 }
 if (pmThreeHalfOclock_ts - now_ts <= 60 * 1000 && pmThreeHalfOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '15:30') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
     diff = pmThreeHalfOclock_ts - now_ts
-    couponIds = process.env.PM_THREE_HALF_OCLOCK_COUPON_IDS ? PM_THREE_HALF_OCLOCK_COUPON_IDS : "251869"
 }
 
 // if (test_ts - now_ts <= 60 * 1000) {
