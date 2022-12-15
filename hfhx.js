@@ -1,27 +1,27 @@
 /*
 [task_local]
-# 拼多多果园-小程序
-15 8 * * * pddFruit.js, tag=拼多多果园-小程序, enabled=true
-搜mobile.yangkeduo.com，请求头的AccessToken，设置PDD_TOKENS 多账号@分割 
+# 汇丰汇选-签到
+9 9 * * * hfhx.js, tag=汇丰汇选-签到, enabled=true
+搜api.qd-metro.com，请求体中的token和deviceCoding，设置QDDT_CKS token;deviceCoding 多账号@分割 
 */
-const $ = new Env('拼多多果园-小程序');
-// const notify = $.isNode() ? require('./sendNotifySp') : '';
+const $ = new Env('汇丰汇选-签到');
+const notify = $.isNode() ? require('./sendNotifySp') : '';
+// const moment = require('moment')
 $.shareWids = []
 $.lackCardIds = []
 $.giftRecords = []
 $.lackMsg = ''
 $.helpFlag = true // 获取助力码
-$.taskList = [36155, 36164, 36125, 37464, 37509, 36013, 36007, 36167, 36132]
-if (process.env.PDD_TOKENS) {
-    if (process.env.PDD_TOKENS.indexOf('@') > -1) {
-        cookieArr = process.env.PDD_TOKENS.split('@');
-    } else if (process.env.PDD_TOKENS.indexOf('\n') > -1) {
-        cookieArr = process.env.PDD_TOKENS.split('\n');
+if (process.env.HFHX_TOKENS) {
+    if (process.env.HFHX_TOKENS.indexOf('@') > -1) {
+        cookieArr = process.env.HFHX_TOKENS.split('@');
+    } else if (process.env.HFHX_TOKENS.indexOf('\n') > -1) {
+        cookieArr = process.env.HFHX_TOKENS.split('\n');
     } else {
-        cookieArr = [process.env.PDD_TOKENS];
+        cookieArr = [process.env.HFHX_TOKENS];
     }
 } else {
-    console.log('未发现有效Cookie，请填写PDD_TOKENS!')
+    console.log('未发现有效Cookie，请填写HFHX_TOKENS!')
     return
 }
 
@@ -31,59 +31,22 @@ $.message = ''
 !(async () => {
     for (let i = 0; i < cookieArr.length; i++) {
         cookie = cookieArr[i]
-        $.redualWater = 0
-        $.stealStatus = true
         if (cookie.indexOf('&') > -1) {
-            $.accessToken = cookie.split('&')[0]
+            $.token = cookie.split('&')[0]
             $.remark = cookie.split('&')[1]
         } else {
-            $.accessToken = cookie
+            $.token = cookie
             $.remark = '匿名用户'
         }
         console.log(`\n🔄 当前进行第${i + 1}个账号，用户备注：${$.remark}`)
-        await missionList()
-        for (let missionKey in $.missionList) {
-            if ($.taskList.indexOf(missionKey) == -1) {
-                $.taskList.push(missionKey)
-            }
-        }
-        console.log(`\n========常规任务=========`)
-        for (let missionKey of $.taskList) {
-            $.taskType = missionKey
-            console.log(`🎯 去完成任务${$.taskType}`)
-            await completeMission()
-        }
-        console.log(`\n========打卡任务=========`)
-        await applyActivity()
-        // console.log(`🎯 开始获取好友列表`)
-        // await getFriends()
-        // if ($.friendList.length > 0) {
-        //     for (let friendInfo of $.friendList) {
-        //         let isSteal = friendInfo.steal_water_status == null ? false : true
-        //         $.stealedName = friendInfo.nickname
-        //         $.friendUid = friendInfo.uid
-        //         if (isSteal === true) await stealWater()
-        //         if ($.stealStatus === false) {
-        //             break
-        //         }
-        //         await $.wait(1000)
-        //     }
-        // }
-        console.log(`\n========开宝箱任务=========`)
-        for (let z = 1; z < 6; z++) {
-            $.boxOrder = z
-            await openBox()
-        }
-        console.log(`\n========浇水任务=========`)
-        await water()
-        if ($.redualWater > 10) {
-            $.waterTimes = parseInt($.redualWater / 10, 10)
-            for (let j = 0; j < $.waterTimes; j++) {
-                await water()
-                await $.wait(1000)
-            }
-        }
+        $.index = i + 1
+        await signIn()
+        await index()
+        $.message += `账号${$.index} ${$.remark} 总积分${$.points}，连签${$.conSignDays}天\n`
     }
+    // console.log($.message)
+    await notify.sendNotify("汇丰汇选签到", $.message)
+
 
 })()
     .catch((e) => {
@@ -93,23 +56,20 @@ $.message = ''
         $.done();
     })
 
-function missionList() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor-query/tag/mission/list?pdduid=0'
-    let body = {
-        "mission_tag": "HOME_GAIN_WATER_MISSION_LIST_EXTRA",
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
+function signIn() {
+    let url = 'https://m.prod.app.hsbcfts.com.cn/wechat/oauth/group-wechat-insh-oauth-gw-svc/pinnacle/HsbcInshServiceAccount/pinnacle/pinfmp/usertask/signIn'
+    let body = {}
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code != null) {
-                    console.log("💥 获取任务列表失败！")
+                if (dataObj.code != 0) {
+                    console.log(dataObj.message)
                 } else {
-                    console.log(`\n✅ 获取任务列表成功！`)
-                    $.missionList = dataObj.mission_list
+                    $.conSignDays = dataObj.data.pointsInfo.continuityDay
+                    $.montnSignDays = dataObj.data.pointsInfo.signInDaysOfMonth
+                    console.log(`✅ 签到成功！`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -121,28 +81,24 @@ function missionList() {
     })
 }
 
-function completeMission() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/mission/complete/gain?ts=1671003202054&pdduid=0'
+function index() {
+    let url = 'https://m.prod.app.hsbcfts.com.cn/wechat/oauth/group-wechat-insh-oauth-gw-svc/pinnacle/HsbcInshServiceAccount/pinnacle/pinfmp/usertask/index'
     let body = {
-        "mission_type": $.taskType,
-        "gain_time": 1,
-        "no_reward": false,
-        "fun_pl": 10,
-        "tubetoken": ""
+        "defaultCount": 5
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 任务完成失败：${dataObj.error_msg}`)
+                if (dataObj.code != 0) {
+                    console.log(dataObj.message)
                 } else {
-                    if (dataObj.result == null) {
-                        console.log(`💧 任务完成：获得${dataObj.reward_list[0].reward_amount}g水滴，当前水滴${dataObj.water_amount}g`)
-                    } else {
-                        console.log(`🚫 该任务已经完成过了~`)
-                    }
+                    $.conSignDays = dataObj.data.pointsInfo.continuityDay
+                    $.montnSignDays = dataObj.data.pointsInfo.signInDaysOfMonth
+                    $.points = dataObj.data.pointsInfo.pointBalance
+                    console.log(`🏷️ 总积分${$.points}`)
+                    console.log(`📆 已连续签到${$.conSignDays}天，本月已签到${$.montnSignDays}天`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -154,160 +110,6 @@ function completeMission() {
     })
 }
 
-function water() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/water/cost?pdduid=1'
-    let body = {
-        "fun_id": "xcx_home_page",
-        "product_scene": 0,
-        "lower_end_device": false,
-        "fun_pl": 10,
-        "location_auth": false,
-        "screen_token": "",
-        "mission_type": 0,
-        "tubetoken": "",
-        "atw": true,
-        "can_trigger_random_mission": true
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 浇水失败：${dataObj.error_msg}`)
-                } else {
-                    $.redualWater = dataObj.now_water_amount
-                    $.progress_text = dataObj.product.progress_text
-                    $.activity_water_amount = dataObj.accumulate_water_vo.activity_water_amount
-                    console.log(`🧊 浇水成功，还有${$.progress_text}%成熟，剩余${$.redualWater}滴水，明日可领取${$.activity_water_amount}滴水`)
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function applyActivity() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/common/apply/activity?pdduid=9188599218'
-    let body = {
-        "type": 18,
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.success == true) {
-                    console.log(`✅ 获取打卡集水滴任务成功`)
-                    console.log(`💧 已连续打卡${dataObj.continuous_check_in_to_collect_water_vo.finished_count}天，打卡${dataObj.continuous_check_in_to_collect_water_vo.total_count}天可获得奖励`)
-                } else {
-                    console.log(`🚫 未获取到打卡集水滴任务`)
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function openBox() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/withered/open/box?pdduid=9188599218'
-    let body = {
-        "box_order": $.boxOrder,
-        "tubetoken": "",
-        "fun_pl": 10
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取宝箱信息失败：${dataObj.error_msg}`)
-                } else {
-                    if (dataObj.status == 3) {
-                        console.log(`🚫 获取宝箱信息失败`)
-                    } else {
-                        console.log(`💧 收取宝箱成功：收获${dataObj.reward_list[0].reward_amount}滴水`)
-                    }
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-
-function getFriends() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor-query/friend/list/page?pdduid=1'
-    let body = {
-        "page_num": 1,
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取好友列表失败：${dataObj.error_msg}`)
-                    if (dataObj.error_msg.indexOf('上限') > -1 || dataObj.error_msg.indexOf('异常') > -1) {
-                        $.stealStatus = false
-                    }
-                } else {
-                    $.friendList = dataObj.friend_list || []
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function stealWater() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/steal/water?pdduid=1'
-    let body = {
-        // "steal_type": 1,
-        "fun_pl": 10,
-        "friend_uid": $.friendUid,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 偷水失败：${dataObj.error_msg}`)
-                } else {
-                    console.log(`💧 偷水成功：偷取好友【${$.stealedName}】${dataObj.steal_amount}滴水，剩余${dataObj.water_amount}滴水`)
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
 
 function getPostRequest(url, body, method = "POST") {
     let headers = {
@@ -315,10 +117,9 @@ function getPostRequest(url, body, method = "POST") {
         "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
         "User-Agent": $.UA,
-        "Content-Type": "application/json;charset=UTF-8",
-        "Host": "mobile.yangkeduo.com",
-        "Origin": "https://mobile.yangkeduo.com",
-        "AccessToken": $.accessToken
+        "Content-Type": "application/json",
+        "Host": "m.prod.app.hsbcfts.com.cn",
+        "auth-Token": $.token
     }
     return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }

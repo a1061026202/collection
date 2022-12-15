@@ -167,7 +167,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "EN13743486A81F2AD27E90ABFC68365FF3",
+        "id": "EN66BF9A1C36C23A4921B3CEEC2EB3B37E",
         "name": "话费50-20券",
         "time": "14:30",
         "getTimes": "1",
@@ -191,8 +191,8 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "YHQ2022111088563",
-        "name": "花费50-5",
+        "id": "EN1BC307AEDEA42860948C9F39C70BFF2A",
+        "name": "话费50-5",
         "time": "9:00",
         "getTimes": "1",
         "period": "Week",
