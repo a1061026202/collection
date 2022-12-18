@@ -1,37 +1,44 @@
 /*
 [task_local]
-# 建行生活每日签到
-0 19 * * * jhsh_sign.js, tag=建行生活每日签到, enabled=true
+# 建行CC豆每日任务2
+15 8 * * * jh_ccBean.js, tag=建行CC豆每日任务2, enabled=true
+搜fission-events.ccbft.com，请求头的cookie，设置JHCC2_TOKENS，一天抓一次即可 多账号@分割 
 */
-const $ = new Env('建行生活每日签到');
-const notify = $.isNode() ? require('./sendNotifySp') : '';
-
-$.signUrl = 'https://fission-events.ccbft.com/activity/autographnew/register/31/AZGlA939'
-$.drawUrl = 'https://fission-events.ccbft.com/activity/qmwheel/drawPrize/31/vmKOpqm1'
-$.loginUrl = 'https://yunbusiness.ccb.com/basic_service/txCtrl?txcode=A3341SB06'
-$.message = ''
-cookies = process.env.JHSH_SIGN_CKS ? process.env.JHSH_SIGN_CKS : ''
-if (cookies == '') {
-    console.log('未填写建行生活Cookie!')
+const $ = new Env('建行CC豆每日任务2');
+// const notify = $.isNode() ? require('./sendNotifySp') : '';
+if (process.env.JHCC2_TOKENS) {
+    if (process.env.JHCC2_TOKENS.indexOf('@') > -1) {
+        cookieArr = process.env.JHCC2_TOKENS.split('@');
+    } else if (process.env.JHCC2_TOKENS.indexOf('\n') > -1) {
+        cookieArr = process.env.JHCC2_TOKENS.split('\n');
+    } else {
+        cookieArr = [process.env.JHCC2_TOKENS];
+    }
+} else {
+    console.log('未发现有效Cookie，请填写JHCC2_TOKENS!')
     return
 }
-cookieArr = cookies.split('@')
+
 console.log(`\n==========共发现${cookieArr.length}个账号==========\n`)
 $.index = 0
+$.message = ''
 !(async () => {
-
-    for (i = 0; i < cookieArr.length; i++) {
-        $.index++
+    for (let i = 0; i < cookieArr.length; i++) {
         cookie = cookieArr[i]
-        $.UA = `jdapp;iPhone;10.2.2;13.1.2;${uuid()};M/5.0;network/wifi;ADID/;model/iPhone8,1;addressid/2308460611;appBuild/167863;jdSupportDarkMode/0;Mozilla/5.0 (iPhone; CPU iPhone OS 13_1_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148;supportJDSHWK/1;`
-        // $.xsrfToken = decodeURIComponent(cookie.split(';')[0].split('=')[1])
-        console.log($.xsrfToken)
-        await postSignRequest($.signUrl)
-        await $.wait(3000)
-        await postDrawRequest($.drawUrl)
-        await $.wait(3000)
+        $.redualWater = 0
+        $.stealStatus = true
+        if (cookie.indexOf('&') > -1) {
+            $.cookie = cookie.split('&')[0]
+            $.remark = cookie.split('&')[1]
+        } else {
+            $.cookie = cookie
+            $.remark = '匿名用户'
+        }
+        console.log(`\n🔄 当前进行第${i + 1}个账号，用户备注：${$.remark}`)
+        await getUserInfo()
+        
     }
-    await notify.sendNotify('建行生活每日签到', $.message)
+
 })()
     .catch((e) => {
         $.log('', `❌ ${$.name}, 失败! 原因: ${e}!`, '')
@@ -40,89 +47,302 @@ $.index = 0
         $.done();
     })
 
-function postSignRequest(url) {
-    let myRequest = getPostRequest(url);
-    // console.log(type + '-->'+ JSON.stringify(myRequest))
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                if (err) {
-                    console.log(`${$.toStr(err, err)}`)
-                    console.log(`sign API请求失败，请检查网路重试`)
-                } else {
-                    dataObj = JSON.parse(data)
-                    if (dataObj.status == 'success') {
-                        console.log(`账号【${$.index}】签到成功，已连续签到${dataObj.data.continue_register_num}天`)
-                        $.message += `账号【${$.index}】签到成功，已连续签到${dataObj.data.continue_register_num}天\n`
-                    } else {
-                        console.log(`账号【${$.index}】${dataObj.message}`)
-                    }
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
+function getUserState() {
+    let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/getUserState?zhc_token='
+    let body = {
 
-function postDrawRequest(url) {
-    let myRequest = getPostRequest(url);
-    // console.log(type + '-->'+ JSON.stringify(myRequest))
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                if (err) {
-                    console.log(`${$.toStr(err, err)}`)
-                    console.log(`sign API请求失败，请检查网路重试`)
-                } else {
-                    dataObj = JSON.parse(data)
-                    if (dataObj.status == 'success') {
-                        console.log(`账号【${$.index}】中奖啦，获得${dataObj.data.prizename}`)
-                        $.message += `账号【${$.index}】中奖啦，获得${dataObj.data.prizename}\n`
-                    } else {
-                        console.log(`账号【${$.index}】${dataObj.message}`)
-                    }
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function getLoginRequest(url, method = "POST") {
-    let headers = {
-        "Accept": "application/json,text/javascript,*/*",
-        // "Accept-Encoding": "gzip, deflate, br",
-        "Connection": "keep-alive",
-        "User-Agent": $.UA,
-        "Content-Type": "application/json",
-        // "X-Requested-With": "XMLHttpRequest",
-        "Host": "yunbusiness.ccb.com"
     }
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    $.level = dataObj.data.level
+                    $.growthExp = dataObj.data.growthExp
+                    $.needGrowthExp = dataObj.data.needGrowthExp
+                    $.levelRewardId = dataObj.data.zhcRewardInfo.id
+                    $.levelRewardValue = dataObj.data.zhcRewardInfo.rewardValue
+                    $.levelRewardName = dataObj.data.zhcRewardInfo.rewardName
+                    $.levelRewardType = dataObj.data.zhcRewardInfo.rewardType
+                    $.levelReceiveResult = dataObj.data.receiveResult == '00' ? true : false
+                    console.log(`✨ ${$.levelRewardName}，当前经验值${$.growthExp}，升至下一级还需${$.needGrowthExp}经验`)
+                    if ($.needGrowthExp == 0) {
+                        console.log(`🎯 当前等级经验已满`)
+                    }
+                } else {
+                    console.log("💥 获取用户状态失败！")
+                    $.stop = true
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
 }
 
-function getPostRequest(url, method = "POST") {
+function upgradeUser() {
+    let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/upgradeUser?zhc_token='
+    let body = {
+        "userId": $.userId
+    }
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+
+                    console.log(`✅ 升级成功：${dataObj.data.rewardName}`)
+                } else {
+                    console.log("💥 获取用户信息失败！")
+                    $.stop = true
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getUser() {
+    let url = 'https://event.ccbft.com/api/businessCenter/user/getUser?zhc_token='
+    let body = {
+    }
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    $.userId = dataObj.data.userDTO.userId
+                    $.mobile = dataObj.data.userDTO.mobile
+                    console.log(`✅ 当前登录人手机号：${$.mobile}\n🎟️ 用户UserId：${$.userId}`)
+                } else {
+                    console.log("💥 获取用户信息失败！")
+                    $.stop = true
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+// function getLevelReward() {
+//     let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/getLevelReward?zhc_token='
+//     let body = {
+//         "level": $.level
+//     }
+
+//     let myRequest = getPostRequest(url, body);
+//     return new Promise(async resolve => {
+//         $.post(myRequest, (err, resp, data) => {
+//             try {
+//                 dataObj = JSON.parse(data)
+//                 if (dataObj.success === true) {
+//                     console.log(`✅ 领取每日奖励成功 +${dataObj.data.rewardValue}CC豆`)
+//                 } else {
+//                     console.log("💥 领取每日奖励失败！")
+//                 }
+//             } catch (e) {
+//                 // console.log(data);
+//                 console.log(e, resp)
+//             } finally {
+//                 resolve();
+//             }
+//         })
+//     })
+// }
+
+function receiveLevelReward() {
+    let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/receiveLevelReward?zhc_token='
+    let body = {
+        "levelRewardType": $.levelRewardType,
+        "level": $.level,
+        "userId": $.userId,
+        "rewardId": $.levelRewardId
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ 领取每日奖励成功 +${$.levelRewardValue}CC豆`)
+                } else {
+                    console.log("💥 领取每日奖励失败！")
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getUserCCD() {
+    let url = 'https://event.ccbft.com/api/businessCenter/user/getUserCCD?zhc_token='
+    let body = {
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    $.userCCBeanInfo = dataObj.data.userCCBeanInfo
+                    $.userCCBeanExpiredInfo = dataObj.data.userCCBeanExpiredInfo
+                    console.log(`💰 当前账户：${$.userCCBeanInfo.count}CC豆\n⏰ 将有${$.userCCBeanExpiredInfo.count}豆于${$.userCCBeanExpiredInfo.expireDate}过期`)
+                } else {
+                    console.log("💥 获取用户资产失败！")
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function signIn() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/signin?zhc_token='
+    let body = {
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ ${dataObj.message}`)
+                } else {
+                    console.log(`💥 ${dataObj.message}`)
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getUserInfo() {
+    return new Promise(resolve => {
+        let get = {
+            url: `https://fission-events.ccbft.com/Common/activity/getUserInfo/224/6321AWZe`,
+            followRedirect: false,
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "User-Agent": $.UA,
+                "Content-Type": "application/json;charset=UTF-8",
+                "Host": "fission-events.ccbft.com",
+                "Cookie": $.cookie
+            },
+            timeout: 30000
+        }
+        $.get(get, async (err, resp, data) => {
+            try {
+                if (err) {
+                    console.log(`getUserInfo API请求失败`)
+                } else {
+                    console.log(`✅ 获取用户信息成功：${data.phone}`)
+                }
+            } catch (e) {
+                $.logErr(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function browseTask() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/browseTask?zhc_token='
+    let body = {
+        "taskId": $.taskId,
+        "browseSec": 1
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ ${dataObj.message}`)
+                } else {
+                    console.log(`💥 ${dataObj.message}`)
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function receiveReward() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/receiveReward?zhc_token='
+    let body = {
+        "taskId": $.taskId
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ ${dataObj.message}`)
+                } else {
+                    console.log(`💥 ${dataObj.message}`)
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getPostRequest(url, body, method = "POST") {
     let headers = {
         "Accept": "application/json, text/plain, */*",
         "Accept-Encoding": "gzip, deflate, br",
-        "Accept-Language": "zh-cn",
         "Connection": "keep-alive",
-        "Cookie": cookie,
         "User-Agent": $.UA,
-        "X-Requested-With": "XMLHttpRequest",
-        "Host": "fission-events.ccbft.com",
-        "X-XSRF-TOKEN": $.xsrfToken
-
+        "Content-Type": "application/json;charset=UTF-8",
+        "Host": "event.ccbft.com",
+        "zhc_token": $.zhcToken
     }
-    return { url: url, method: method, headers: headers, body: '', timeout: 30000 };
+    return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }
+
 function uuid(x = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") {
     return x.replace(/[xy]/g, function (x) {
         const r = 16 * Math.random() | 0, n = "x" === x ? r : 3 & r | 8;

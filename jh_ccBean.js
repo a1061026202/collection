@@ -1,27 +1,21 @@
 /*
 [task_local]
-# 拼多多果园-小程序
-15 8 * * * pddFruit.js, tag=拼多多果园-小程序, enabled=true
-搜mobile.yangkeduo.com，请求头的AccessToken，设置PDD_TOKENS 多账号@分割 
+# 建行CC豆每日任务
+15 8 * * * jh_ccBean.js, tag=建行CC豆每日任务, enabled=true
+搜event.ccbft.com，请求头的zhcToken，设置JHCC_TOKENS，几小时就会过期，一天抓一次即可 多账号@分割 
 */
-const $ = new Env('拼多多果园-小程序');
+const $ = new Env('建行CC豆每日任务');
 // const notify = $.isNode() ? require('./sendNotifySp') : '';
-$.shareWids = []
-$.lackCardIds = []
-$.giftRecords = []
-$.lackMsg = ''
-$.helpFlag = true // 获取助力码
-$.taskList = [36155, 36164, 36125, 37464, 37509, 36013, 36007, 36167, 36132]
-if (process.env.PDD_TOKENS) {
-    if (process.env.PDD_TOKENS.indexOf('@') > -1) {
-        cookieArr = process.env.PDD_TOKENS.split('@');
-    } else if (process.env.PDD_TOKENS.indexOf('\n') > -1) {
-        cookieArr = process.env.PDD_TOKENS.split('\n');
+if (process.env.JHCC_TOKENS) {
+    if (process.env.JHCC_TOKENS.indexOf('@') > -1) {
+        cookieArr = process.env.JHCC_TOKENS.split('@');
+    } else if (process.env.JHCC_TOKENS.indexOf('\n') > -1) {
+        cookieArr = process.env.JHCC_TOKENS.split('\n');
     } else {
-        cookieArr = [process.env.PDD_TOKENS];
+        cookieArr = [process.env.JHCC_TOKENS];
     }
 } else {
-    console.log('未发现有效Cookie，请填写PDD_TOKENS!')
+    console.log('未发现有效Cookie，请填写JHCC_TOKENS!')
     return
 }
 
@@ -34,56 +28,56 @@ $.message = ''
         $.redualWater = 0
         $.stealStatus = true
         if (cookie.indexOf('&') > -1) {
-            $.accessToken = cookie.split('&')[0]
+            $.zhcToken = cookie.split('&')[0]
             $.remark = cookie.split('&')[1]
         } else {
-            $.accessToken = cookie
+            $.zhcToken = cookie
             $.remark = '匿名用户'
         }
         console.log(`\n🔄 当前进行第${i + 1}个账号，用户备注：${$.remark}`)
-        await missionList()
-        for (let missionKey in $.missionList) {
-            if ($.taskList.indexOf(missionKey) == -1) {
-                $.taskList.push(missionKey)
+        await getUser()
+        await getUserState()
+        while ($.needGrowthExp == 0) {
+            await upgradeUser()
+            await $.wait(1000)
+            await getUserState()
+            await $.wait(1000)
+        }
+        console.log(`\n========每日奖励========\n`)
+        if ($.levelReceiveResult === false) {
+            console.log(`⏰ 去领取每日奖励`)
+            await receiveLevelReward()
+            await $.wait(1000)
+        } else {
+            console.log(`⏰ 每日奖励已领取~`)
+        }
+        console.log(`\n========签到任务========\n`)
+        await getUserInfo()
+        if ($.signStatus == false) {
+            await signIn()
+            await $.wait(1000)
+            await getUserInfo()
+            console.log(`✅ 签到成功，已连续签到${$.currentDay}天`)
+        } else {
+            console.log(`✅ 已经完成过签到任务了，已连续签到${$.currentDay}天`)
+        }
+        console.log(`\n========每日任务========\n`)
+        await getTaskList()
+        for (let taskInfo of $.taskList) {
+            $.taskId = taskInfo.id
+            isComplete = taskInfo.taskDetail.completeStatus == '02' ? true : false
+            if (isComplete == false) {
+                console.log(`⏰ 去完成任务：${taskInfo.taskName}`)
+                await browseTask()
+                await $.wait(2000)
+                await receiveReward()
+            } else {
+                console.log(`✅ 已完成任务：${taskInfo.taskName}`)
             }
         }
-        await reward()
-        console.log(`\n========常规任务=========`)
-        for (let missionKey of $.taskList) {
-            $.taskType = missionKey
-            console.log(`🎯 去完成任务${$.taskType}`)
-            await completeMission()
-        }
-        console.log(`\n========打卡任务=========`)
-        await applyActivity()
-        // console.log(`🎯 开始获取好友列表`)
-        // await getFriends()
-        // if ($.friendList.length > 0) {
-        //     for (let friendInfo of $.friendList) {
-        //         let isSteal = friendInfo.steal_water_status == null ? false : true
-        //         $.stealedName = friendInfo.nickname
-        //         $.friendUid = friendInfo.uid
-        //         if (isSteal === true) await stealWater()
-        //         if ($.stealStatus === false) {
-        //             break
-        //         }
-        //         await $.wait(1000)
-        //     }
-        // }
-        console.log(`\n========开宝箱任务=========`)
-        for (let z = 1; z < 6; z++) {
-            $.boxOrder = z
-            await openBox()
-        }
-        console.log(`\n========浇水任务=========`)
-        await water()
-        if ($.redualWater > 10) {
-            $.waterTimes = parseInt($.redualWater / 10, 10)
-            for (let j = 0; j < $.waterTimes; j++) {
-                await water()
-                await $.wait(1000)
-            }
-        }
+        console.log(`\n========资产统计========\n`)
+        await getUserState()
+        await getUserCCD()
     }
 
 })()
@@ -94,23 +88,248 @@ $.message = ''
         $.done();
     })
 
-function missionList() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor-query/tag/mission/list?pdduid=0'
+function getUserState() {
+    let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/getUserState?zhc_token='
     let body = {
-        "mission_tag": "HOME_GAIN_WATER_MISSION_LIST_EXTRA",
-        "fun_pl": 10,
-        "tubetoken": ""
+
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code != null) {
+                if (dataObj.success === true) {
+                    $.level = dataObj.data.level
+                    $.growthExp = dataObj.data.growthExp
+                    $.needGrowthExp = dataObj.data.needGrowthExp
+                    $.levelRewardId = dataObj.data.zhcRewardInfo.id
+                    $.levelRewardValue = dataObj.data.zhcRewardInfo.rewardValue
+                    $.levelRewardName = dataObj.data.zhcRewardInfo.rewardName
+                    $.levelRewardType = dataObj.data.zhcRewardInfo.rewardType
+                    $.levelReceiveResult = dataObj.data.receiveResult == '00' ? true : false
+                    console.log(`✨ ${$.levelRewardName}，当前经验值${$.growthExp}，升至下一级还需${$.needGrowthExp}经验`)
+                    if ($.needGrowthExp == 0) {
+                        console.log(`🎯 当前等级经验已满`)
+                    }
+                } else {
+                    console.log("💥 获取用户状态失败！")
+                    $.stop = true
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function upgradeUser() {
+    let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/upgradeUser?zhc_token='
+    let body = {
+        "userId": $.userId
+    }
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+
+                    console.log(`✅ 升级成功：${dataObj.data.rewardName}`)
+                } else {
+                    console.log("💥 获取用户信息失败！")
+                    $.stop = true
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getUser() {
+    let url = 'https://event.ccbft.com/api/businessCenter/user/getUser?zhc_token='
+    let body = {
+    }
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    $.userId = dataObj.data.userDTO.userId
+                    $.mobile = dataObj.data.userDTO.mobile
+                    console.log(`✅ 当前登录人手机号：${$.mobile}\n🎟️ 用户UserId：${$.userId}`)
+                } else {
+                    console.log("💥 获取用户信息失败！")
+                    $.stop = true
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+// function getLevelReward() {
+//     let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/getLevelReward?zhc_token='
+//     let body = {
+//         "level": $.level
+//     }
+
+//     let myRequest = getPostRequest(url, body);
+//     return new Promise(async resolve => {
+//         $.post(myRequest, (err, resp, data) => {
+//             try {
+//                 dataObj = JSON.parse(data)
+//                 if (dataObj.success === true) {
+//                     console.log(`✅ 领取每日奖励成功 +${dataObj.data.rewardValue}CC豆`)
+//                 } else {
+//                     console.log("💥 领取每日奖励失败！")
+//                 }
+//             } catch (e) {
+//                 // console.log(data);
+//                 console.log(e, resp)
+//             } finally {
+//                 resolve();
+//             }
+//         })
+//     })
+// }
+
+function receiveLevelReward() {
+    let url = 'https://event.ccbft.com/api/businessCenter/mainVenue/receiveLevelReward?zhc_token='
+    let body = {
+        "levelRewardType": $.levelRewardType,
+        "level": $.level,
+        "userId": $.userId,
+        "rewardId": $.levelRewardId
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ 领取每日奖励成功 +${$.levelRewardValue}CC豆`)
+                } else {
+                    console.log("💥 领取每日奖励失败！")
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getUserCCD() {
+    let url = 'https://event.ccbft.com/api/businessCenter/user/getUserCCD?zhc_token='
+    let body = {
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    $.userCCBeanInfo = dataObj.data.userCCBeanInfo
+                    $.userCCBeanExpiredInfo = dataObj.data.userCCBeanExpiredInfo
+                    console.log(`💰 当前账户：${$.userCCBeanInfo.count}CC豆\n⏰ 将有${$.userCCBeanExpiredInfo.count}豆于${$.userCCBeanExpiredInfo.expireDate}过期`)
+                } else {
+                    console.log("💥 获取用户资产失败！")
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getUserInfo() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/getUserInfo?zhc_token='
+    let body = {
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    $.signId = dataObj.data.taskId
+                    $.signStatus = dataObj.data.signTaskState == "01" ? true : false
+                    $.currentDay = dataObj.data.currentDay
+                } else {
+                    console.log("💥 获取用户签到信息失败！")
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function signIn() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/signin?zhc_token='
+    let body = {
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ ${dataObj.message}`)
+                } else {
+                    console.log(`💥 ${dataObj.message}`)
+                }
+            } catch (e) {
+                // console.log(data);
+                console.log(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getTaskList() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/getTaskList?zhc_token='
+    let body = {
+        "publishChannels": "01",
+        "regionId": $.regionId
+    }
+
+    let myRequest = getPostRequest(url, body);
+    return new Promise(async resolve => {
+        $.post(myRequest, (err, resp, data) => {
+            try {
+                dataObj = JSON.parse(data)
+                if (dataObj.success === true) {
+                    console.log(`✅ 获取任务列表成功！`)
+                    $.taskList = dataObj.data['浏览任务']
+                } else {
                     console.log("💥 获取任务列表失败！")
-                } else {
-                    console.log(`\n✅ 获取任务列表成功！`)
-                    $.missionList = dataObj.mission_list
                 }
             } catch (e) {
                 // console.log(data);
@@ -122,28 +341,22 @@ function missionList() {
     })
 }
 
-function completeMission() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/mission/complete/gain?ts=1671003202054&pdduid=0'
+function browseTask() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/browseTask?zhc_token='
     let body = {
-        "mission_type": $.taskType,
-        "gain_time": 1,
-        "no_reward": false,
-        "fun_pl": 10,
-        "tubetoken": ""
+        "taskId": $.taskId,
+        "browseSec": 1
     }
+
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 任务完成失败：${dataObj.error_msg}`)
+                if (dataObj.success === true) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    if (dataObj.result == null) {
-                        console.log(`💧 任务完成：获得${dataObj.reward_list[0].reward_amount}g水滴，当前水滴${dataObj.water_amount}g`)
-                    } else {
-                        console.log(`🚫 该任务已经完成过了~`)
-                    }
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -155,176 +368,21 @@ function completeMission() {
     })
 }
 
-function water() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/water/cost?pdduid=1'
+function receiveReward() {
+    let url = 'https://event.ccbft.com/api/businessCenter/taskCenter/receiveReward?zhc_token='
     let body = {
-        "fun_id": "xcx_home_page",
-        "product_scene": 0,
-        "lower_end_device": false,
-        "fun_pl": 10,
-        "location_auth": false,
-        "screen_token": "",
-        "mission_type": 0,
-        "tubetoken": "",
-        "atw": true,
-        "can_trigger_random_mission": true
+        "taskId": $.taskId
     }
+
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 浇水失败：${dataObj.error_msg}`)
+                if (dataObj.success === true) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    $.redualWater = dataObj.now_water_amount
-                    $.progress_text = dataObj.product.progress_text
-                    $.activity_water_amount = dataObj.accumulate_water_vo.activity_water_amount
-                    console.log(`🧊 浇水成功，还有${$.progress_text}%成熟，剩余${$.redualWater}滴水，明日可领取${$.activity_water_amount}滴水`)
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function applyActivity() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/common/apply/activity?pdduid=9188599218'
-    let body = {
-        "type": 18,
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.success == true) {
-                    console.log(`✅ 获取打卡集水滴任务成功`)
-                    console.log(`💧 已连续打卡${dataObj.continuous_check_in_to_collect_water_vo.finished_count}天，打卡${dataObj.continuous_check_in_to_collect_water_vo.total_count}天可获得奖励`)
-                } else {
-                    console.log(`🚫 未获取到打卡集水滴任务`)
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function openBox() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/withered/open/box?pdduid=9188599218'
-    let body = {
-        "box_order": $.boxOrder,
-        "tubetoken": "",
-        "fun_pl": 10
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取宝箱信息失败：${dataObj.error_msg}`)
-                } else {
-                    if (dataObj.status == 3) {
-                        console.log(`🚫 获取宝箱信息失败`)
-                    } else {
-                        console.log(`💧 收取宝箱成功：收获${dataObj.reward_list[0].reward_amount}滴水`)
-                    }
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-
-function getFriends() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor-query/friend/list/page?pdduid=1'
-    let body = {
-        "page_num": 1,
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取好友列表失败：${dataObj.error_msg}`)
-                    if (dataObj.error_msg.indexOf('上限') > -1 || dataObj.error_msg.indexOf('异常') > -1) {
-                        $.stealStatus = false
-                    }
-                } else {
-                    $.friendList = dataObj.friend_list || []
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function stealWater() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/steal/water?pdduid=1'
-    let body = {
-        // "steal_type": 1,
-        "fun_pl": 10,
-        "friend_uid": $.friendUid,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 偷水失败：${dataObj.error_msg}`)
-                } else {
-                    console.log(`💧 偷水成功：偷取好友【${$.stealedName}】${dataObj.steal_amount}滴水，剩余${dataObj.water_amount}滴水`)
-                }
-            } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
-            } finally {
-                resolve();
-            }
-        })
-    })
-}
-
-function reward() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/gain/accumulate/water/reward?pdduid='
-    let body = {
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
-            try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取前一日奖励失败：${dataObj.error_msg}`)
-                } else {
-                    console.log(`💧 获取前一日奖励成功：${dataObj.acculate_water_vo.reward_amount}滴水`)
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -343,9 +401,8 @@ function getPostRequest(url, body, method = "POST") {
         "Connection": "keep-alive",
         "User-Agent": $.UA,
         "Content-Type": "application/json;charset=UTF-8",
-        "Host": "mobile.yangkeduo.com",
-        "Origin": "https://mobile.yangkeduo.com",
-        "AccessToken": $.accessToken
+        "Host": "event.ccbft.com",
+        "zhc_token": $.zhcToken
     }
     return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }

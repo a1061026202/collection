@@ -167,7 +167,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "EN66BF9A1C36C23A4921B3CEEC2EB3B37E",
+        "id": "ENEFE0E7E3E11DACED339FA62717F0EC6A",
         "name": "话费50-20券",
         "time": "14:30",
         "getTimes": "1",
@@ -175,7 +175,7 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
-        "id": "EN8B2825ED26A93F0EDDB8875A7F47D27A",
+        "id": "ENB46B4D71BDA5E7B930BE0E574FDC0375",
         "name": "外卖20-10",
         "time": "11:30",
         "getTimes": "1",
@@ -191,7 +191,31 @@ couponMapList = [
         "zoneId": "370200"
     },
     {
+        "id": "YHQ2022120585889",
+        "name": "外卖20-10券",
+        "time": "17:00",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
         "id": "EN1BC307AEDEA42860948C9F39C70BFF2A",
+        "name": "话费50-5",
+        "time": "9:00",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "YHQ2022111088563",
+        "name": "话费50-5",
+        "time": "9:00",
+        "getTimes": "1",
+        "period": "Week",
+        "zoneId": "370200"
+    },
+    {
+        "id": "YHQ2022121289142",
         "name": "话费50-5",
         "time": "9:00",
         "getTimes": "1",
@@ -228,6 +252,7 @@ elevenOclock_ts = moment(`${today} 11:00:00`).valueOf()
 elevenHALFOclock_ts = moment(`${today} 11:30:00`).valueOf()
 pmTwoHalfOclock_ts = moment(`${today} 14:30:00`).valueOf()
 pmThreeHalfOclock_ts = moment(`${today} 15:30:00`).valueOf()
+pmFiveOclock_ts = moment(`${today} 17:00:00`).valueOf()
 
 diff = -1
 if (sevenOclock_ts - now_ts <= 60 * 1000 && sevenOclock_ts - now_ts > 0) {
@@ -372,6 +397,20 @@ if (pmThreeHalfOclock_ts - now_ts <= 60 * 1000 && pmThreeHalfOclock_ts - now_ts 
     couponIds = couponIdList.join('&')
     diff = pmThreeHalfOclock_ts - now_ts
 }
+if (pmFiveOclock_ts - now_ts <= 60 * 1000 && pmFiveOclock_ts - now_ts > 0) {
+    let couponIdList = []
+    for (let couponInfo of couponMapList) {
+        let couponTime = couponInfo.time
+        if (couponTime.indexOf("_") > -1) {
+            couponTime = couponTime.split("_")[0]
+        }
+        if (couponTime === '17:00') {
+            couponIdList.push(couponInfo.id)
+        }
+    }
+    couponIds = couponIdList.join('&')
+    diff = pmFiveOclock_ts - now_ts
+}
 
 // if (test_ts - now_ts <= 60 * 1000) {
 //     couponIds = process.env.ELEVEN_OCLOCK_COUPON_IDS ? ELEVEN_OCLOCK_COUPON_IDS : "241434"
@@ -478,7 +517,7 @@ function getCoupon(dict) {
                 dict.isSuccess = false
                 dataObj = JSON.parse(data)
                 if (err) {
-                    dict.errMsg = `抢券失败：${dataObj.errMsg}`
+                    dict.errMsg = `${time()}【${dict.phone}】抢券失败：${dataObj.errMsg}`
                     console.log(dict.errMsg)
                     if (dict.errMsg.indexOf('拥挤') > -1) {
                         dict.hotFlag = true
@@ -497,6 +536,10 @@ function getCoupon(dict) {
                         console.log(`${time()}【${dict.phone}】已经抢过 ${dict.couponName}`)
                         dict.errMsg = `已经抢过优惠券 `
                     }
+                }
+                if (dict.errMsg.indexOf('初始化错误信息') > -1) {
+                    console.log(`${time()}【${dict.phone}】抢券失败：服务器无返回`)
+                    dict.hotFlag = true
                 }
             } catch (e) {
                 // console.log(data);

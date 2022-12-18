@@ -1,89 +1,103 @@
+const { json } = require("stream/consumers");
+
 /*
 [task_local]
-# 拼多多果园-小程序
-15 8 * * * pddFruit.js, tag=拼多多果园-小程序, enabled=true
-搜mobile.yangkeduo.com，请求头的AccessToken，设置PDD_TOKENS 多账号@分割 
+# 小程序-RIO会员中心
+15 8 * * * rio.js, tag=小程序-RIO会员中心, enabled=true
+搜club.rioalc.com，请求头的Authorization，设置RIO_TOKENS 多账号@分割 
 */
-const $ = new Env('拼多多果园-小程序');
-// const notify = $.isNode() ? require('./sendNotifySp') : '';
-$.shareWids = []
-$.lackCardIds = []
-$.giftRecords = []
-$.lackMsg = ''
-$.helpFlag = true // 获取助力码
-$.taskList = [36155, 36164, 36125, 37464, 37509, 36013, 36007, 36167, 36132]
-if (process.env.PDD_TOKENS) {
-    if (process.env.PDD_TOKENS.indexOf('@') > -1) {
-        cookieArr = process.env.PDD_TOKENS.split('@');
-    } else if (process.env.PDD_TOKENS.indexOf('\n') > -1) {
-        cookieArr = process.env.PDD_TOKENS.split('\n');
+const $ = new Env('小程序-RIO会员中心');
+const notify = $.isNode() ? require('./sendNotifySp') : '';
+const moment = require('moment')
+if (process.env.RIO_TOKENS) {
+    if (process.env.RIO_TOKENS.indexOf('@') > -1) {
+        cookieArr = process.env.RIO_TOKENS.split('@');
+    } else if (process.env.RIO_TOKENS.indexOf('\n') > -1) {
+        cookieArr = process.env.RIO_TOKENS.split('\n');
     } else {
-        cookieArr = [process.env.PDD_TOKENS];
+        cookieArr = [process.env.RIO_TOKENS];
     }
 } else {
-    console.log('未发现有效Cookie，请填写PDD_TOKENS!')
+    console.log('未发现有效Cookie，请填写RIO_TOKENS!')
     return
 }
-
+$.commits = ["真的很不错", "真的很棒", "支持支持支持", "顶顶顶", "种草了~"]
 console.log(`\n==========共发现${cookieArr.length}个账号==========\n`)
 $.index = 0
 $.message = ''
+
 !(async () => {
     for (let i = 0; i < cookieArr.length; i++) {
         cookie = cookieArr[i]
-        $.redualWater = 0
-        $.stealStatus = true
         if (cookie.indexOf('&') > -1) {
-            $.accessToken = cookie.split('&')[0]
+            $.cookie = cookie.split('&')[0]
             $.remark = cookie.split('&')[1]
         } else {
-            $.accessToken = cookie
+            $.cookie = cookie
             $.remark = '匿名用户'
         }
-        console.log(`\n🔄 当前进行第${i + 1}个账号，用户备注：${$.remark}`)
-        await missionList()
-        for (let missionKey in $.missionList) {
-            if ($.taskList.indexOf(missionKey) == -1) {
-                $.taskList.push(missionKey)
+        $.likeNum = 0
+        $.commentNum = 0
+        $.submitNum = 0
+        console.log(`\n🔄 当前进行第${i + 1}个账号\n`)
+        await getUserInfo()
+        console.log("\n========每日签到========\n")
+        await signIn()
+        await getSignInfo()
+        if (isFirstDay() == true) {
+            console.log('\n========月度任务========\n')
+            a: for (let pageNo = 1; pageNo < 2000; pageNo++) {
+                $.pageNo = pageNo
+                await getPageInfo()
+                for (let article of $.page) {
+                    if (article.is_like == 0) {
+                        $.articleId = article.id
+                        console.log(`👍 去点赞文章【${article.title}】`)
+                        await likeArticle()
+                        await $.wait(1500)
+                        console.log(`✏️ 去评论文章【${article.title}】`)
+                        await commentArticle()
+                        await $.wait(1500)
+                        console.log(`✏️ 去分享文章【${article.title}】`)
+                        await shareArticle()
+                        await $.wait(1500)
+                        $.likeNum++
+                        if ($.likeNum >= 5) {
+                            console.log(`✅ 已点赞、评论5篇文章，任务完成`)
+                            break a
+                        }
+                    }
+                }
+            }
+            await getMyPageInfo()
+            if ($.myPage.length > 0) {
+                for (let myArticleInfo of $.myPage) {
+                    $.articleId = myArticleInfo.id
+                    console.log(`🧹 去删除文章【${myArticleInfo.title}】`)
+                    await delArticle()
+                    await $.wait(2000)
+                }
+            }
+            console.log(`✏️ 去发表文章`)
+            for (let j = 0; j < 5; j++) {
+                await createArticle()
+                await $.wait(2000)
+            }
+            await getMyPageInfo()
+            if ($.myPage.length > 0) {
+                for (let myArticleInfo of $.myPage) {
+                    $.articleId = myArticleInfo.id
+                    console.log(`🧹 去删除文章【${myArticleInfo.title}】`)
+                    await delArticle()
+                    await $.wait(2000)
+                }
             }
         }
-        await reward()
-        console.log(`\n========常规任务=========`)
-        for (let missionKey of $.taskList) {
-            $.taskType = missionKey
-            console.log(`🎯 去完成任务${$.taskType}`)
-            await completeMission()
-        }
-        console.log(`\n========打卡任务=========`)
-        await applyActivity()
-        // console.log(`🎯 开始获取好友列表`)
-        // await getFriends()
-        // if ($.friendList.length > 0) {
-        //     for (let friendInfo of $.friendList) {
-        //         let isSteal = friendInfo.steal_water_status == null ? false : true
-        //         $.stealedName = friendInfo.nickname
-        //         $.friendUid = friendInfo.uid
-        //         if (isSteal === true) await stealWater()
-        //         if ($.stealStatus === false) {
-        //             break
-        //         }
-        //         await $.wait(1000)
-        //     }
-        // }
-        console.log(`\n========开宝箱任务=========`)
-        for (let z = 1; z < 6; z++) {
-            $.boxOrder = z
-            await openBox()
-        }
-        console.log(`\n========浇水任务=========`)
-        await water()
-        if ($.redualWater > 10) {
-            $.waterTimes = parseInt($.redualWater / 10, 10)
-            for (let j = 0; j < $.waterTimes; j++) {
-                await water()
-                await $.wait(1000)
-            }
-        }
+        await getUserInfo()
+        $.message += `${$.userInfo}\n`
+    }
+    if ($.message != '') {
+        await notify.sendNotify("RIO会员积分", `${$.message}`)
     }
 
 })()
@@ -94,23 +108,20 @@ $.message = ''
         $.done();
     })
 
-function missionList() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor-query/tag/mission/list?pdduid=0'
+function signIn() {
+    let url = 'https://club.rioalc.com/api/miniprogram/user-sign-click'
     let body = {
-        "mission_tag": "HOME_GAIN_WATER_MISSION_LIST_EXTRA",
-        "fun_pl": 10,
-        "tubetoken": ""
     }
+
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code != null) {
-                    console.log("💥 获取任务列表失败！")
+                if (dataObj.code === 200) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    console.log(`\n✅ 获取任务列表成功！`)
-                    $.missionList = dataObj.mission_list
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -122,28 +133,30 @@ function missionList() {
     })
 }
 
-function completeMission() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/mission/complete/gain?ts=1671003202054&pdduid=0'
+function isFirstDay() {
+    startDay = moment().startOf("month").format("YYYY-MM-DD")
+    today = moment().format("YYYY-MM-DD")
+    return startDay == today
+}
+
+function commentArticle() {
+    let url = `https://club.rioalc.com/api/miniprogram/post-comment/${$.articleId}`
+    let randomidx = Math.round(Math.random() * $.commits.length)
+    if (randomidx > ($.commits.length - 1)) {
+        randomidx = $.commits.length - 1
+    }
     let body = {
-        "mission_type": $.taskType,
-        "gain_time": 1,
-        "no_reward": false,
-        "fun_pl": 10,
-        "tubetoken": ""
+        "comment": $.commits[randomidx]
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 任务完成失败：${dataObj.error_msg}`)
+                if (dataObj.code === 200) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    if (dataObj.result == null) {
-                        console.log(`💧 任务完成：获得${dataObj.reward_list[0].reward_amount}g水滴，当前水滴${dataObj.water_amount}g`)
-                    } else {
-                        console.log(`🚫 该任务已经完成过了~`)
-                    }
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -155,32 +168,19 @@ function completeMission() {
     })
 }
 
-function water() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/water/cost?pdduid=1'
+function likeArticle() {
+    let url = `https://club.rioalc.com/api/miniprogram/post-likes/${$.articleId}`
     let body = {
-        "fun_id": "xcx_home_page",
-        "product_scene": 0,
-        "lower_end_device": false,
-        "fun_pl": 10,
-        "location_auth": false,
-        "screen_token": "",
-        "mission_type": 0,
-        "tubetoken": "",
-        "atw": true,
-        "can_trigger_random_mission": true
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 浇水失败：${dataObj.error_msg}`)
+                if (dataObj.code === 200) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    $.redualWater = dataObj.now_water_amount
-                    $.progress_text = dataObj.product.progress_text
-                    $.activity_water_amount = dataObj.accumulate_water_vo.activity_water_amount
-                    console.log(`🧊 浇水成功，还有${$.progress_text}%成熟，剩余${$.redualWater}滴水，明日可领取${$.activity_water_amount}滴水`)
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -192,23 +192,19 @@ function water() {
     })
 }
 
-function applyActivity() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/common/apply/activity?pdduid=9188599218'
+function shareArticle() {
+    let url = `https://club.rioalc.com/api/miniprogram/post-share/${$.articleId}`
     let body = {
-        "type": 18,
-        "fun_pl": 10,
-        "tubetoken": ""
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.success == true) {
-                    console.log(`✅ 获取打卡集水滴任务成功`)
-                    console.log(`💧 已连续打卡${dataObj.continuous_check_in_to_collect_water_vo.finished_count}天，打卡${dataObj.continuous_check_in_to_collect_water_vo.total_count}天可获得奖励`)
+                if (dataObj.code === 200) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    console.log(`🚫 未获取到打卡集水滴任务`)
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -220,26 +216,25 @@ function applyActivity() {
     })
 }
 
-function openBox() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/withered/open/box?pdduid=9188599218'
+function createArticle() {
+    let url = `https://club.rioalc.com/api/miniprogram/post-create`
     let body = {
-        "box_order": $.boxOrder,
-        "tubetoken": "",
-        "fun_pl": 10
+        "post_content": "如题，这个铁汁只是用来水经验。",
+        "post_title": "这个铁汁只是用来水经验",
+        "images": [
+            "https:\/\/club-oss.rioalc.com\/uploads\/rio\/temporary\/2022-12-18\/ztS9rg4xrj369yUECP64CY5ypndZlwYyR8ycvs57.jpg"
+        ],
+        "topic_id": 20
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取宝箱信息失败：${dataObj.error_msg}`)
+                if (dataObj.code === 200) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    if (dataObj.status == 3) {
-                        console.log(`🚫 获取宝箱信息失败`)
-                    } else {
-                        console.log(`💧 收取宝箱成功：收获${dataObj.reward_list[0].reward_amount}滴水`)
-                    }
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -251,26 +246,19 @@ function openBox() {
     })
 }
 
-
-function getFriends() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor-query/friend/list/page?pdduid=1'
+function delArticle() {
+    let url = `https://club.rioalc.com/api/miniprogram/post-del/${$.articleId}`
     let body = {
-        "page_num": 1,
-        "fun_pl": 10,
-        "tubetoken": ""
     }
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取好友列表失败：${dataObj.error_msg}`)
-                    if (dataObj.error_msg.indexOf('上限') > -1 || dataObj.error_msg.indexOf('异常') > -1) {
-                        $.stealStatus = false
-                    }
+                if (dataObj.code === 200) {
+                    console.log(`✅ ${dataObj.message}`)
                 } else {
-                    $.friendList = dataObj.friend_list || []
+                    console.log(`💥 ${dataObj.message}`)
                 }
             } catch (e) {
                 // console.log(data);
@@ -282,27 +270,32 @@ function getFriends() {
     })
 }
 
-function stealWater() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/steal/water?pdduid=1'
-    let body = {
-        // "steal_type": 1,
-        "fun_pl": 10,
-        "friend_uid": $.friendUid,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
+function getUserInfo() {
+    return new Promise(resolve => {
+        let get = {
+            url: `https://club.rioalc.com/api/miniprogram/user-info`,
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "User-Agent": $.UA,
+                "Content-Type": "application/json;charset=UTF-8",
+                "Host": "club.rioalc.com",
+                "Authorization": $.cookie
+            },
+            timeout: 30000
+        }
+        $.get(get, async (err, resp, data) => {
             try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 偷水失败：${dataObj.error_msg}`)
+                if (err) {
+                    console.log(`getUserInfo API请求失败`)
                 } else {
-                    console.log(`💧 偷水成功：偷取好友【${$.stealedName}】${dataObj.steal_amount}滴水，剩余${dataObj.water_amount}滴水`)
+                    dataObj = JSON.parse(data)
+                    console.log(`✅ 获取用户信息成功\n🎟️ 当前登录人：${dataObj.data.nick_name}，总积分：${dataObj.data.points}`)
+                    $.userInfo = `${dataObj.data.nick_name}，总积分：${dataObj.data.points}`
                 }
             } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
+                $.logErr(e, resp)
             } finally {
                 resolve();
             }
@@ -310,25 +303,97 @@ function stealWater() {
     })
 }
 
-function reward() {
-    let url = 'https://mobile.yangkeduo.com/proxy/api/api/manor/gain/accumulate/water/reward?pdduid='
-    let body = {
-        "fun_pl": 10,
-        "tubetoken": ""
-    }
-    let myRequest = getPostRequest(url, body);
-    return new Promise(async resolve => {
-        $.post(myRequest, (err, resp, data) => {
+function getSignInfo() {
+    return new Promise(resolve => {
+        let get = {
+            url: `https://club.rioalc.com/api/miniprogram/user-sign-info`,
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "User-Agent": $.UA,
+                "Content-Type": "application/json;charset=UTF-8",
+                "Host": "club.rioalc.com",
+                "Authorization": $.cookie
+            },
+            timeout: 30000
+        }
+        $.get(get, async (err, resp, data) => {
             try {
-                dataObj = JSON.parse(data)
-                if (dataObj.error_code) {
-                    console.log(`🚫 获取前一日奖励失败：${dataObj.error_msg}`)
+                if (err) {
+                    console.log(`getUserInfo API请求失败`)
                 } else {
-                    console.log(`💧 获取前一日奖励成功：${dataObj.acculate_water_vo.reward_amount}滴水`)
+                    dataObj = JSON.parse(data)
+                    console.log(`📆 已连续签到${dataObj.data.continue_click_times}`)
                 }
             } catch (e) {
-                // console.log(data);
-                console.log(e, resp)
+                $.logErr(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getPageInfo() {
+    return new Promise(resolve => {
+        let get = {
+            url: `https://club.rioalc.com/api/miniprogram/brand-post?page=${$.pageNo}&brand_key=`,
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "User-Agent": $.UA,
+                "Content-Type": "application/json;charset=UTF-8",
+                "Host": "club.rioalc.com",
+                "Authorization": $.cookie
+            },
+            timeout: 30000
+        }
+        $.get(get, async (err, resp, data) => {
+            try {
+                if (err) {
+                    console.log(`getUserInfo API请求失败`)
+                } else {
+                    dataObj = JSON.parse(data)
+                    $.page = dataObj.data
+                    console.log(`✅ 获取第${$.pageNo}页文章列表成功！`)
+                }
+            } catch (e) {
+                $.logErr(e, resp)
+            } finally {
+                resolve();
+            }
+        })
+    })
+}
+
+function getMyPageInfo() {
+    return new Promise(resolve => {
+        let get = {
+            url: `https://club.rioalc.com/api/miniprogram/mine-post?page=1`,
+            headers: {
+                "Accept": "application/json, text/plain, */*",
+                "Accept-Encoding": "gzip, deflate, br",
+                "Connection": "keep-alive",
+                "User-Agent": $.UA,
+                "Content-Type": "application/json;charset=UTF-8",
+                "Host": "club.rioalc.com",
+                "Authorization": $.cookie
+            },
+            timeout: 30000
+        }
+        $.get(get, async (err, resp, data) => {
+            try {
+                if (err) {
+                    console.log(`getUserInfo API请求失败`)
+                } else {
+                    dataObj = JSON.parse(data)
+                    $.myPage = dataObj.data
+                    console.log(`✅ 获取自己发表的文章列表成功！`)
+                }
+            } catch (e) {
+                $.logErr(e, resp)
             } finally {
                 resolve();
             }
@@ -343,9 +408,8 @@ function getPostRequest(url, body, method = "POST") {
         "Connection": "keep-alive",
         "User-Agent": $.UA,
         "Content-Type": "application/json;charset=UTF-8",
-        "Host": "mobile.yangkeduo.com",
-        "Origin": "https://mobile.yangkeduo.com",
-        "AccessToken": $.accessToken
+        "Host": "club.rioalc.com",
+        "Authorization": $.cookie
     }
     return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }
