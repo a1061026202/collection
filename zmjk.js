@@ -320,14 +320,13 @@ async function rw(timeout = 0) {
                     await llhc()
                     console.log(`去完成任务【浏览商品】`)
                     await llsp()
+                    console.log(data.data)
                     for (let f = 0; f < data.data.powerVos.length; f++) {
                         amount = data.data.powerVos[f].amount
                         flowId = data.data.powerVos[f].flowId
-                        for (let k = 0; k < 1; k++) {
-                            console.log(data.data.powerVos[f].changeTypeDesc)
-                            await sqnl();//收取能量
-                            await $.wait(1000)
-                        }
+                        console.log(data.data.powerVos[f].changeTypeDesc)
+                        await sqnl();//收取能量
+                        await $.wait(1000)
                     }
 
                     amount = 10
