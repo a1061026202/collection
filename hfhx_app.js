@@ -1,7 +1,7 @@
 /*
 [task_local]
 # 汇丰汇选-APP
-cron:9 9 * * * hfhx.js, tag=汇丰汇选-APP, enabled=true
+9 9 * * * hfhx.js, tag=汇丰汇选-APP, enabled=true
 搜m.prod.app.hsbcfts.com.cn，请求体中的X-HSBC-E2E-Trust-Token，设置HFHX_APP_TOKEN 
 多账号@分割 
 */
