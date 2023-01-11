@@ -32,7 +32,7 @@ $.message = ''
     console.log(`\n====================\n`)
     console.log($.message)
     await notify.sendNotify("青岛地铁积分到账通知", `${$.message.join('')}`)
-    
+
 
 })()
     .catch((e) => {
@@ -47,6 +47,7 @@ function main(cookie) {
 
         var token = cookie.split(';')[0]
         var deviceCoding = cookie.split(';')[1]
+        var nickName = cookie.split(';').length > 2 ? cookie.split(';')[2] : '匿名用户'
         console.log(`\n==========开始账号【${token}】任务==========\n`)
         console.log(moment().format('YYYY-MM-DD hh:mm:ss.SSS'))
         var baseBody = {
@@ -78,7 +79,7 @@ function main(cookie) {
                 }
 
                 if (taskStatus == '2') {
-                    console.log(`【${token}】去完成【${taskName}】`)
+                    console.log(`【${nickName}】去完成【${taskName}】`)
                     var documentId = await getTaskBrowseConf('https://api.qd-metro.com/ngscore/task/getTaskBrowseConf', bodyGetPrize)
                     await $.wait(2000)
                     let bodyFinishTask = {
@@ -89,7 +90,7 @@ function main(cookie) {
                     }
                     await browseDocument('https://api.qd-metro.com/ngscore/task/browseDocument', bodyFinishTask)
                     await $.wait(2000)
-                    console.log(`【${token}】任务【${taskName}】已经完成，去领取奖励`)
+                    console.log(`【${nickName}】任务【${taskName}】已经完成，去领取奖励`)
                     await finishTask('https://api.qd-metro.com/ngscore/task/finishTask', bodyGetPrize, token)
                     await $.wait(1000)
                 }
@@ -97,8 +98,8 @@ function main(cookie) {
             }
         }
         var currentScore = await accInfo('https://api.qd-metro.com/ngscore/user/accInfo', baseBody)
-        var message = `账号[${token}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分\n`
-        console.log(`账号[${token}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分`)
+        var message = `账号[${nickName}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分\n`
+        console.log(`账号[${nickName}]本次运行获得${currentScore - lastScore}积分，当前共有${currentScore}积分`)
         console.log(moment().format('YYYY-MM-DD hh:mm:ss.SSS'))
         resolve(message)
     })
@@ -191,7 +192,6 @@ function finishTask(url, body, token) {
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
-                console.log(resp)
                 dataObj = JSON.parse(data)
                 console.log(dataObj.msg)
             } catch (e) {

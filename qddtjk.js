@@ -1,51 +1,38 @@
 /*
 [task_local]
-# 汇丰汇选小程序-签到
-9 9 * * * hfhx.js, tag=汇丰汇选小程序-签到, enabled=true
-搜m.prod.app.hsbcfts.com.cn，请求体中的auth-Token，设置HFHX_TOKENS 多账号@分割 
+# 青岛地铁-新年集卡
+15 9,20 * * * qddtjk.js, tag=青岛地铁-新年集卡, enabled=true
+搜api.qd-metro.com，请求体中的token和deviceCoding，设置QDDT_CKS token;deviceCoding 多账号@分割 
 */
-const $ = new Env('汇丰汇选小程序-签到');
+const $ = new Env('青岛地铁-新年集卡');
 const notify = $.isNode() ? require('./sendNotifySp') : '';
-// const moment = require('moment')
-$.shareWids = []
-$.lackCardIds = []
-$.giftRecords = []
-$.lackMsg = ''
-$.helpFlag = true // 获取助力码
-if (process.env.HFHX_TOKENS) {
-    if (process.env.HFHX_TOKENS.indexOf('@') > -1) {
-        cookieArr = process.env.HFHX_TOKENS.split('@');
-    } else if (process.env.HFHX_TOKENS.indexOf('\n') > -1) {
-        cookieArr = process.env.HFHX_TOKENS.split('\n');
+const moment = require('moment')
+promiseList = []
+if (process.env.QDDT_CKS) {
+    if (process.env.QDDT_CKS.indexOf('@') > -1) {
+        cookieArr = process.env.QDDT_CKS.split('@');
+    } else if (process.env.QDDT_CKS.indexOf('\n') > -1) {
+        cookieArr = process.env.QDDT_CKS.split('\n');
     } else {
-        cookieArr = [process.env.HFHX_TOKENS];
+        cookieArr = [process.env.QDDT_CKS];
     }
 } else {
-    console.log('未发现有效Cookie，请填写HFHX_TOKENS!')
+    console.log('未填写青岛地铁Cookie!')
     return
 }
 
 console.log(`\n==========共发现${cookieArr.length}个账号==========\n`)
 $.index = 0
 $.message = ''
+$.activityNo = '1607541253853626368'
 !(async () => {
-    for (let i = 0; i < cookieArr.length; i++) {
-        cookie = cookieArr[i]
-        if (cookie.indexOf('&') > -1) {
-            $.token = cookie.split('&')[0]
-            $.remark = cookie.split('&')[1]
-        } else {
-            $.token = cookie
-            $.remark = '匿名用户'
-        }
-        console.log(`\n🔄 当前进行第${i + 1}个账号，用户备注：${$.remark}`)
-        $.index = i + 1
-        await signIn()
-        await index()
-        $.message += `账号${$.index} ${$.remark} 总积分${$.points}，连签${$.conSignDays}天\n`
+    for (let cookie of cookieArr) {
+        await main(cookie)
     }
-    // console.log($.message)
-    await notify.sendNotify("汇丰汇选签到", $.message)
+    // $.message = await Promise.all(promiseList)
+    console.log(`\n====================\n`)
+    console.log($.message)
+    await notify.sendNotify("青岛地铁新年集卡", $.message)
 
 
 })()
@@ -56,60 +43,91 @@ $.message = ''
         $.done();
     })
 
-function signIn() {
-    let url = 'https://m.prod.app.hsbcfts.com.cn/wechat/oauth/group-wechat-insh-oauth-gw-svc/pinnacle/HsbcInshServiceAccount/pinnacle/pinfmp/usertask/signIn'
-    let body = {}
+function main(cookie) {
+    return new Promise(async resolve => {
+
+        var token = cookie.split(';')[0]
+        var deviceCoding = cookie.split(';')[1]
+        var nickName = cookie.split(';').length > 2 ? cookie.split(';')[2] : '匿名用户'
+        console.log(`\n==========开始账号【${token}】任务==========\n`)
+        console.log(moment().format('YYYY-MM-DD hh:mm:ss.SSS'))
+        var baseBody = `------WebKitFormBoundary6BJgnnR3aQCxaiDa\r\nContent-Disposition: form-data; name="token"\r\n\r\n${token}\r\n------WebKitFormBoundary6BJgnnR3aQCxaiDa\r\nContent-Disposition: form-data; name="deviceCoding"\r\n\r\n${deviceCoding}\r\n------WebKitFormBoundary6BJgnnR3aQCxaiDa\r\nContent-Disposition: form-data; name="activityNo"\r\n\r\n${$.activityNo}\r\n------WebKitFormBoundary6BJgnnR3aQCxaiDa--\r\n`
+
+        let cardInfo = await actData(baseBody)
+        for (let card of cardInfo.fuList) {
+            console.log(`🎟️ ${card.name} ${card.count}张`)
+        }
+        let lotterychance = cardInfo.usableCount
+        console.log(`\n🎁 共有${lotterychance}次抽卡机会`)
+        if (lotterychance > 0) {
+            for (let j = 0; j < lotterychance; j++) {
+                await lottery(baseBody)
+                await $.wait(1000)
+            }
+            cardInfo = await actData(baseBody)
+            for (let card of cardInfo.fuList) {
+                console.log(`🎟️ ${card.name} ${card.count}张`)
+
+            }
+        } else {
+            console.log(`\n❌ 没有抽卡机会`)
+        }
+        let message = `账号[${nickName}] `
+        for (let card of cardInfo.fuList) {
+            message += `${card.name} ${card.count} `
+        }
+        message += '\n'
+        console.log(message)
+        console.log(moment().format('YYYY-MM-DD hh:mm:ss.SSS'))
+        $.message += message
+        resolve()
+    })
+
+}
+
+function lottery(body) {
+    let url = 'https://api.qd-metro.com/ngactivity/activity/fu/lottery'
     let myRequest = getPostRequest(url, body);
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
+                totalScore = -1
                 dataObj = JSON.parse(data)
-                if (dataObj.code != 0) {
-                    console.log(dataObj.message)
+                if (err) {
+                    console.log(dataObj.msg)
                 } else {
-                    $.conSignDays = dataObj.data.pointsInfo.continuityDay
-                    $.montnSignDays = dataObj.data.pointsInfo.signInDaysOfMonth
-                    console.log(`✅ 签到成功！`)
+                    console.log(`🎉 抽奖成功，获得${dataObj.data.prizeName}`)
                 }
             } catch (e) {
                 // console.log(data);
                 console.log(e, resp)
             } finally {
-                resolve();
+                resolve(totalScore);
             }
         })
     })
 }
 
-function index() {
-    let url = 'https://m.prod.app.hsbcfts.com.cn/wechat/oauth/group-wechat-insh-oauth-gw-svc/pinnacle/HsbcInshServiceAccount/pinnacle/pinfmp/usertask/index'
-    let body = {
-        "defaultCount": 5
-    }
+function actData(body) {
+    let url = 'https://api.qd-metro.com/ngactivity/activity/fu/actData'
     let myRequest = getPostRequest(url, body);
+    // console.log(myRequest)
     return new Promise(async resolve => {
         $.post(myRequest, (err, resp, data) => {
             try {
                 dataObj = JSON.parse(data)
-                if (dataObj.code != 0) {
-                    console.log(dataObj.message)
-                } else {
-                    $.conSignDays = dataObj.data.pointsInfo.continuityDay
-                    $.montnSignDays = dataObj.data.pointsInfo.signInDaysOfMonth
-                    $.points = dataObj.data.pointsInfo.pointBalance
-                    console.log(`🏷️ 总积分${$.points}`)
-                    console.log(`📆 已连续签到${$.conSignDays}天，本月已签到${$.montnSignDays}天`)
+                if (err) {
+                    console.log(dataObj.msg)
                 }
             } catch (e) {
                 // console.log(data);
                 console.log(e, resp)
             } finally {
-                resolve();
+                resolve(dataObj.data);
             }
         })
     })
 }
-
 
 function getPostRequest(url, body, method = "POST") {
     let headers = {
@@ -117,12 +135,15 @@ function getPostRequest(url, body, method = "POST") {
         "Accept-Encoding": "gzip, deflate, br",
         "Connection": "keep-alive",
         "User-Agent": $.UA,
-        "Content-Type": "application/json",
-        "Host": "m.prod.app.hsbcfts.com.cn",
-        "auth-Token": $.token
+        "Content-Type": "multipart/form-data; boundary=----WebKitFormBoundary6BJgnnR3aQCxaiDa",
+        "Host": "api.qd-metro.com",
+        "Referer": "http://carboncdn.bestonepay.com",
+        "Origin": "http://carboncdn.bestonepay.com"
     }
-    return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
+    // console.log(JSON.stringify(body))
+    return { url: url, method: method, headers: headers, body: body, timeout: 30000 };
 }
+
 
 function uuid(x = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") {
     return x.replace(/[xy]/g, function (x) {
