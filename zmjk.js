@@ -12,7 +12,7 @@
 const $ = new Env("姿美健康");
 const CryptoJS = require("crypto-js")
 const t = randomString(16)
-const notify = $.isNode() ? require("./sendNotify") : "";
+const notify = $.isNode() ? require("./sendNotifySp") : "";
 //const qs = $.isNode() ? require("qs") : "";
 var timestamp = Math.round(new Date().getTime()).toString();
 const debug = 0; //0为关闭调试，1为打开调试,默认为0

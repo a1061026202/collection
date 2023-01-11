@@ -1,14 +1,13 @@
 /*
 [task_local]
 # 汇丰汇选-APP
-9 9 * * * hfhx.js, tag=汇丰汇选-APP, enabled=true
+cron:9 9 * * * hfhx.js, tag=汇丰汇选-APP, enabled=true
 搜m.prod.app.hsbcfts.com.cn，请求体中的X-HSBC-E2E-Trust-Token，设置HFHX_APP_TOKEN 
 多账号@分割 
 */
 const $ = new Env('汇丰汇选-APP');
 const notify = $.isNode() ? require('./sendNotifySp') : '';
 const moment = require('moment');
-const request = require('request-promise');
 // const moment = require('moment')
 $.shareWids = []
 $.lackCardIds = []
@@ -124,11 +123,11 @@ $.message = ''
                 console.log(`🎟️ ${pointTaskData.pointTaskName} ${pointTaskData.pointAmount}分`)
                 $.handlePoint += pointTaskData.pointAmount
             }
-            $.handleMsg = `🎟️待领取积分 ${$.handlePoint}，请登录APP手动领取~`
+            $.handleMsg = `🎟️待领取积分${$.handlePoint}，请登录APP手动领取`
         }
 
         await querypointsaccountinfo();
-
+        
         $.message += `🎉账号${$.index} ${$.remark} 积分统计\n${$.handleMsg || '没有未领取的积分~'}\n${$.pointMsg}\n\n`
     }
     // console.log($.message)
@@ -1029,14 +1028,7 @@ function getPostRequest2(url, body, method = "POST") {
         // "X-HSBC-Pinnacle-DeviceNo": $.deviceCode
 
     }
-    return {
-        url: url,
-        method: method,
-        headers: headers,
-        body: JSON.stringify(body),
-        rejectUnauthorized: false,
-        timeout: 30000
-    };
+    return { url: url, method: method, headers: headers, body: JSON.stringify(body), timeout: 30000 };
 }
 
 function uuid(x = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx") {
